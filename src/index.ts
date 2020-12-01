@@ -12,6 +12,11 @@ export type ShellacReturnVal = {
   [key: string]: string
 }
 
+/* NOTE: IMPORTING LIB WHICH IS COMPILED WITH REGHEX */
+import parser from '../lib'
+
+console.log({parser})
+
 const shellac = async (
   s: TemplateStringsArray,
   ...i: ShellacInterpolations[]
