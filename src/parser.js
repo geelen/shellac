@@ -1,7 +1,11 @@
-import match, { parse } from 'reghex';
+import match, { parse } from 'reghex'
 
-const name = match('name')`
-  ${/[\w,! ]+/}
-`;
+const empty_line = match(`empty_line`)`
+  ${/^\s*$/}
+`
 
-export default parse(name)
+const grammar = match('name')`
+  (${empty_line} | ${/\$ echo .*/})*
+`
+
+export default parse(grammar)

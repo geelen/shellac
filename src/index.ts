@@ -18,7 +18,7 @@ import _parser from '../lib/parser'
 
 type ParseResult = Array<string> & { tag: string }
 type Parser = (str: string) =>  undefined | ParseResult
-const parser = _parser as Parser
+export const parser = _parser as Parser
 
 const shellac = async (
   s: TemplateStringsArray,
@@ -28,8 +28,11 @@ const shellac = async (
   const str = s.join('')
   if (str.length === 0) throw new Error('Must provide statements')
 
+  const parsed = parser(str)
+  if (!parsed) throw new Error('Parsing error!')
+
   return {
-    stdout: parser('Hello, world!')![0],
+    stdout: parsed[0],
     stderr: ''
   }
 }
