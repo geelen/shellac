@@ -51,7 +51,7 @@ const shellac = async (
   const parsed = parser(str)
   if (!parsed || typeof parsed === 'string') throw new Error('Parsing error!')
 
-  console.log(parsed)
+  // console.log(parsed)
 
   let last_cmd: ExecaSyncReturnValue | null = null
 

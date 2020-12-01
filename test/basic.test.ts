@@ -8,4 +8,13 @@ describe('getting started', () => {
 
     expect(stdout).toBe('Hello, world!')
   })
+
+  it('should run two simple commands', async () => {
+    const { stdout } = await shellac`
+      $ echo "Hello, world!"
+      $ echo "If there's one thing JavaScript has been lacking, it's DSLs."
+    `
+
+    expect(stdout).toBe(`If there's one thing JavaScript has been lacking, it's DSLs.`)
+  })
 })
