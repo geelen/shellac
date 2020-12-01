@@ -1,4 +1,7 @@
 import execa, { ExecaSyncReturnValue } from 'execa'
+/* NOTE: IMPORTING LIB WHICH IS COMPILED WITH REGHEX */
+// @ts-ignore
+import _parser from '../lib/parser'
 
 export type ShellacInterpolations =
   | string
@@ -13,10 +16,6 @@ export type ShellacReturnVal = {
   stderr: string
   [key: string]: string
 }
-
-/* NOTE: IMPORTING LIB WHICH IS COMPILED WITH REGHEX */
-// @ts-ignore
-import _parser from '../lib/parser'
 
 export type ParseResult = string | (Array<ParseResult> & { tag: string })
 type Parser = (str: string) => undefined | ParseResult
@@ -43,10 +42,18 @@ export const log_parse_result = (
 
 const shellac = async (
   s: TemplateStringsArray,
-  ...i: ShellacInterpolations[]
+  ...interps: ShellacInterpolations[]
 ): Promise<ShellacReturnVal> => {
-  const str = s.join('')
+  let str = s[0]
+
+  for (let i = 0; i < interps.length; i++) {
+    let is_fn = typeof interps[i] === 'function'
+    str = `${str}${is_fn ? 'FUNCTION_' : 'VALUE_'}${i}${s[i + 1]}`
+  }
+
   if (str.length === 0) throw new Error('Must provide statements')
+
+  console.log(str)
 
   const parsed = parser(str)
   if (!parsed || typeof parsed === 'string') throw new Error('Parsing error!')

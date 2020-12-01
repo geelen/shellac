@@ -15,6 +15,22 @@ describe('getting started', () => {
       $ echo "If there's one thing JavaScript has been lacking, it's DSLs."
     `
 
-    expect(stdout).toBe(`If there's one thing JavaScript has been lacking, it's DSLs.`)
+    expect(stdout).toBe(
+      `If there's one thing JavaScript has been lacking, it's DSLs.`
+    )
+  })
+
+  it('should handle an if-else statement', async () => {
+    for (const value of [true, false]) {
+      const { stdout } = await shellac`
+      if ${value} {
+        $ echo lol
+      } else {
+        $ echo boats
+      }
+    `
+
+      expect(stdout).toBe(value ? 'lol' : 'boats')
+    }
   })
 })
