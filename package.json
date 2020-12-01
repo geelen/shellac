@@ -1,0 +1,22 @@
+{
+  "name": "shellac",
+  "version": "0.0.1",
+  "description": "Protect and beautify your shell scripting",
+  "main": "index.js",
+  "scripts": {
+    "test": "false"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geelen/shellac.git"
+  },
+  "keywords": [
+    "shell"
+  ],
+  "author": "Glen Maddern",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/geelen/shellac/issues"
+  },
+  "homepage": "https://github.com/geelen/shellac#readme"
+}
