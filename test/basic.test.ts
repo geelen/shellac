@@ -6,6 +6,6 @@ describe('getting started', () => {
       $ echo "Hello, world!" 
     `
 
-
+    expect(stdout).toBe('Hello, world!')
   })
 })
