@@ -80,4 +80,36 @@ describe('parser', () => {
         ignored:
     `)
   })
+
+  it('should match a few echo commands', () => {
+    expect(
+      parser(`
+        $ echo lol
+        $ echo boats
+      `)
+    ).toParseTo(`
+      grammar:
+        ignored: 
+        echo_line: $ echo lol
+        ignored:
+        echo_line: $ echo boats
+        ignored:
+    `)
+    expect(
+      parser(`
+    
+        $ echo lol
+        
+        $ echo boats
+        
+      `)
+    ).toParseTo(`
+      grammar:
+        ignored: 
+        echo_line: $ echo lol
+        ignored:
+        echo_line: $ echo boats
+        ignored:
+    `)
+  })
 })

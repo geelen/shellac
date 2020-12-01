@@ -1,6 +1,5 @@
 import match, { parse } from 'reghex'
 
-
 const ignored = match('ignored')`
   ${/([\s,]|#[^\n\r]+)+/}
 `;
