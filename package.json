@@ -4,7 +4,7 @@
   "description": "Protect and beautify your shell scripting",
   "main": "index.js",
   "scripts": {
-    "test": "false"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -18,5 +18,11 @@
   "bugs": {
     "url": "https://github.com/geelen/shellac/issues"
   },
-  "homepage": "https://github.com/geelen/shellac#readme"
+  "homepage": "https://github.com/geelen/shellac#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.15",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.4.4",
+    "typescript": "^4.1.2"
+  }
 }
