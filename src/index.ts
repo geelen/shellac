@@ -24,6 +24,10 @@ const shellac = async (
   s: TemplateStringsArray,
   ...i: ShellacInterpolations[]
 ): Promise<ShellacReturnVal> => {
+
+  const str = s.join('')
+  if (str.length === 0) throw new Error('Must provide statements')
+
   return {
     stdout: parser('Hello, world!')![0],
     stderr: ''
