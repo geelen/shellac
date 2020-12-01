@@ -4,16 +4,12 @@ const ignored = match('ignored')`
   ${/([\s,]|#[^\n\r]+)+/}
 `;
 
-const command = match('command')`
-  ${/.*/}
-`
-
 const command_line = match(`command_line`)`
-  ${ignored}? ${/\$/} ${command}
+  (?: ${ignored}? ${/\$ /}) ${/.*/}
 `
 
 const grammar = match('grammar')`
-  ( ${ignored} | ${command_line} )+
+  ( (?: ${ignored}) | ${command_line} )+
 `
 
 export default parse(grammar)

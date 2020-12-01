@@ -38,7 +38,7 @@ describe('parser', () => {
   it('should match a single command', () => {
     expect(parser(`$ echo lol`)).toParseTo(`
       grammar:
-        echo_line: $ echo lol
+        command_line: echo lol
     `)
   })
 
@@ -49,9 +49,7 @@ describe('parser', () => {
     `)
     ).toParseTo(`
       grammar:
-        ignored: 
-        echo_line: $ echo lol
-        ignored:
+        command_line: echo lol
     `)
     expect(
       parser(`
@@ -61,9 +59,7 @@ describe('parser', () => {
     `)
     ).toParseTo(`
       grammar:
-        ignored: 
-        echo_line: $ echo lol
-        ignored:
+        command_line: echo lol
     `)
   })
 
@@ -75,11 +71,8 @@ describe('parser', () => {
       `)
     ).toParseTo(`
       grammar:
-        ignored: 
-        echo_line: $ echo lol
-        ignored:
-        echo_line: $ echo boats
-        ignored:
+        command_line: echo lol
+        command_line: echo boats
     `)
     expect(
       parser(`
@@ -91,11 +84,8 @@ describe('parser', () => {
       `)
     ).toParseTo(`
       grammar:
-        ignored: 
-        echo_line: $ echo lol
-        ignored:
-        echo_line: $ echo boats
-        ignored:
+        command_line: echo lol
+        command_line: echo boats
     `)
   })
 

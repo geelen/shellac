@@ -1,3 +1,5 @@
+import execa, {ExecaSyncReturnValue} from 'execa'
+
 export type ShellacInterpolations =
   | string
   | boolean
@@ -47,15 +49,24 @@ const shellac = async (
   if (str.length === 0) throw new Error('Must provide statements')
 
   const parsed = parser(str)
-  if (!parsed) throw new Error('Parsing error!')
+  if (!parsed || typeof parsed === 'string') throw new Error('Parsing error!')
 
   console.log(parsed)
 
-  let first_command = null
+  let last_cmd: ExecaSyncReturnValue | null = null
+
+  for (const chunk of parsed) {
+    if (Array.isArray(chunk)) {
+      if (chunk.tag === 'command_line') {
+        const [str] = chunk as string[]
+        last_cmd = await execa.command(str, { shell: true })
+      }
+    }
+  }
 
   return {
-    stdout: parsed[0] as string,
-    stderr: '',
+    stdout: last_cmd?.stdout || '',
+    stderr: last_cmd?.stderr || '',
   }
 }
 shellac.in = (cwd: string) => shellac
