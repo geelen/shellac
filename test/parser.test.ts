@@ -1,19 +1,5 @@
-import { parser, ParseResult } from '../src'
+import { parser, ParseResult, log_parse_result } from '../src'
 
-const log = (chunk: ParseResult, depth = 0, solo = false) => {
-  if (!chunk) return
-
-  if (Array.isArray(chunk) && chunk.tag) {
-    const indent = `${' '.repeat(depth)}`
-    const newline = `${depth === 0 ? '' : '\n'}`
-    return `${newline}${indent}${chunk.tag + ':'}${chunk
-      .map((each) => log(each, depth + 2, chunk.length === 1))
-      .join('')}`
-  } else {
-    const indent = solo ? '' : '\n' + ' '.repeat(depth)
-    return `${indent} ${(chunk as string).trim()}`
-  }
-}
 
 declare global {
   namespace jest {
@@ -32,17 +18,17 @@ expect.extend({
       }
     }
 
-    const format = (str) =>
+    const format = (str: string) =>
       str
         .split('\n')
         .map((l) => l.trim())
         .filter(Boolean)
         .join('\n')
 
-    console.log(received)
-    console.log(log(received))
+    // console.log(received)
+    // console.log(log(received))
 
-    expect(format(log(received))).toEqual(format(expected))
+    expect(format(log_parse_result(received))).toEqual(format(expected))
 
     return { message: () => 'Parsing matched!', pass: true }
   },
@@ -111,5 +97,9 @@ describe('parser', () => {
         echo_line: $ echo boats
         ignored:
     `)
+  })
+
+  it('should not parse random strings', () => {
+    expect(parser(`WAT IS DIS`)).toBeUndefined()
   })
 })
