@@ -1,11 +1,16 @@
 import match, { parse } from 'reghex'
 
-const empty_line = match(`empty_line`)`
-  ${/^\s*$/}
+
+const ignored = match('ignored')`
+  ${/([\s,]|#[^\n\r]+)+/}
+`;
+
+const echo_line = match(`echo_line`)`
+  ${ignored}? ${/\$ echo .*/}
 `
 
-const grammar = match('name')`
-  (${empty_line} | ${/\$ echo .*/})*
+const grammar = match('grammar')`
+  ( ${ignored} | ${echo_line} )*
 `
 
 export default parse(grammar)

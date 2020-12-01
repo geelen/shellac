@@ -16,7 +16,7 @@ export type ShellacReturnVal = {
 // @ts-ignore
 import _parser from '../lib/parser'
 
-type ParseResult = Array<string> & { tag: string }
+export type ParseResult = string | Array<ParseResult> & { tag: string }
 type Parser = (str: string) =>  undefined | ParseResult
 export const parser = _parser as Parser
 
