@@ -13,16 +13,19 @@ export type ShellacReturnVal = {
 }
 
 /* NOTE: IMPORTING LIB WHICH IS COMPILED WITH REGHEX */
-import parser from '../lib'
+// @ts-ignore
+import _parser from '../lib/parser'
 
-console.log({parser})
+type ParseResult = Array<string> & { tag: string }
+type Parser = (str: string) =>  undefined | ParseResult
+const parser = _parser as Parser
 
 const shellac = async (
   s: TemplateStringsArray,
   ...i: ShellacInterpolations[]
 ): Promise<ShellacReturnVal> => {
   return {
-    stdout: '',
+    stdout: parser('Hello, world!')![0],
     stderr: ''
   }
 }
