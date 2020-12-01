@@ -40,6 +40,33 @@ export const log_parse_result = (
   }
 }
 
+const execute = async (
+  interps: ShellacInterpolations[],
+  chunk: ParseResult
+) => {
+  if (Array.isArray(chunk)) {
+    if (chunk.tag === 'command_line') {
+      const [str] = chunk as string[]
+      return execa.command(str, { shell: true })
+    } else if (chunk.tag === 'if_statement') {
+      console.log({ chunk })
+      const [[val_type, val_id], if_clause, else_clause] = chunk
+      console.log({val_type, val_id, if_clause, else_clause})
+      if (val_type !== 'VALUE') throw new Error('If statements only accept value interpolations, not functions.')
+
+      // @ts-ignore
+      if (interps[val_id]) {
+        console.log("IF STATEMENT IS TRUE")
+      } else if (else_clause) {
+        console.log("IF STATEMENT IS FALSE")
+
+      }
+    }
+  }
+
+  return null
+}
+
 const shellac = async (
   s: TemplateStringsArray,
   ...interps: ShellacInterpolations[]
@@ -63,12 +90,7 @@ const shellac = async (
   let last_cmd: ExecaSyncReturnValue | null = null
 
   for (const chunk of parsed) {
-    if (Array.isArray(chunk)) {
-      if (chunk.tag === 'command_line') {
-        const [str] = chunk as string[]
-        last_cmd = await execa.command(str, { shell: true })
-      }
-    }
+    last_cmd = await execute(interps, chunk)
   }
 
   return {
