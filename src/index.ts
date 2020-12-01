@@ -1,4 +1,4 @@
-import execa, {ExecaSyncReturnValue} from 'execa'
+import execa, { ExecaSyncReturnValue } from 'execa'
 
 export type ShellacInterpolations =
   | string
@@ -20,7 +20,7 @@ import _parser from '../lib/parser'
 
 export type ParseResult = string | (Array<ParseResult> & { tag: string })
 type Parser = (str: string) => undefined | ParseResult
-export const parser = _parser as Parser
+export const parser = (str: string) => (_parser as Parser)(str.trim())
 
 export const log_parse_result = (
   chunk: ParseResult,

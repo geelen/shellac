@@ -92,4 +92,44 @@ describe('parser', () => {
   it('should not parse random strings', () => {
     expect(parser(`WAT IS DIS`)).toBeUndefined()
   })
+
+  it('should parse an if statement', () => {
+    expect(
+      parser(`
+        if VALUE_0 {
+          $ echo lol
+        }
+      `)
+    ).toParseTo(`
+      grammar:
+        if_statement:
+          identifier:
+            VALUE
+            0
+            grammar:
+              command_line: echo lol
+    `)
+  })
+
+  it('should parse an if-else statement', () => {
+    expect(
+      parser(`
+        if VALUE_0 {
+          $ echo lol
+        } else {
+          $ echo boats
+        }
+      `)
+    ).toParseTo(`
+      grammar:
+        if_statement:
+          identifier:
+            VALUE
+            0
+          grammar:
+            command_line: echo lol
+          grammar:
+            command_line: echo boats
+    `)
+  })
 })
