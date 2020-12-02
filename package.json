@@ -2,29 +2,35 @@
   "name": "shellac",
   "version": "0.1.0",
   "description": "Protect and beautify your shell scripting",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "scripts": {
-    "build:parser": "babel src/parser.js -d lib",
-    "build:ts": "tsc --outDir lib",
-    "build": "yarn build:parser && yarn build:ts",
-    "prepack": "npm run build",
-    "test": "jest"
+  "keywords": [
+    "shell"
+  ],
+  "homepage": "https://github.com/geelen/shellac#readme",
+  "bugs": {
+    "url": "https://github.com/geelen/shellac/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/geelen/shellac.git"
   },
-  "keywords": [
-    "shell"
-  ],
-  "author": "Glen Maddern",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/geelen/shellac/issues"
+  "author": "Glen Maddern",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "yarn build:parser && yarn build:ts",
+    "build:parser": "babel src/parser.js -d lib",
+    "build:ts": "tsc --outDir lib",
+    "prepack": "npm run build",
+    "test": "jest"
   },
-  "homepage": "https://github.com/geelen/shellac#readme",
+  "dependencies": {
+    "execa": "^4.1.0",
+    "reghex": "^1.0.2"
+  },
   "devDependencies": {
+    "@babel/cli": "^7.12.8",
+    "@babel/core": "^7.12.9",
     "@babel/preset-env": "^7.12.7",
     "@types/fs-extra": "^9.0.4",
     "@types/jest": "^26.0.15",
@@ -33,11 +39,5 @@
     "tmp-promise": "^3.0.2",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.2"
-  },
-  "dependencies": {
-    "@babel/cli": "^7.12.8",
-    "@babel/core": "^7.12.9",
-    "execa": "^4.1.0",
-    "reghex": "^1.0.2"
   }
 }
