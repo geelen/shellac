@@ -1,4 +1,5 @@
 import shellac from '../src'
+import * as tmp from 'tmp-promise'
 
 describe('getting started', () => {
   it('should run a simple command', async () => {
@@ -78,6 +79,24 @@ describe('getting started', () => {
     `
     expect(file_dir).toBe(__dirname)
 
-
+    const { stdout: helper_dir } = await shellac.in(__dirname)`
+      $ pwd
+    `
+    expect(helper_dir).toBe(__dirname)
   })
+
+  // it('should await async blocks', async () => {
+  //   const dir = tmp.dir()
+  //   await shellac`
+  //     $ pwd
+  //   `
+  //   expect(orig_dir).toBe(process.cwd())
+  //
+  //   const { stdout: file_dir } = await shellac`
+  //     in ${ __dirname } {
+  //       $ pwd
+  //     }
+  //   `
+  //   expect(file_dir).toBe(__dirname)
+  // })
 })

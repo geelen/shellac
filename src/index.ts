@@ -40,7 +40,7 @@ export const log_parse_result = (
   }
 }
 
-type ExecResult = ExecaSyncReturnValue | null;
+type ExecResult = ExecaSyncReturnValue | null
 
 const execute = async (
   interps: ShellacInterpolations[],
@@ -56,7 +56,10 @@ const execute = async (
     } else if (chunk.tag === 'if_statement') {
       const [[val_type, val_id], if_clause, else_clause] = chunk
       // console.log({val_type, val_id, if_clause, else_clause})
-      if (val_type !== 'VALUE') throw new Error('If statements only accept value interpolations, not functions.')
+      if (val_type !== 'VALUE')
+        throw new Error(
+          'If statements only accept value interpolations, not functions.'
+        )
 
       // @ts-ignore
       if (interps[val_id]) {
@@ -68,11 +71,17 @@ const execute = async (
       }
     } else if (chunk.tag === 'in_statement') {
       const [[val_type, val_id], in_clause] = chunk
-      if (val_type !== 'VALUE') throw new Error('IN statements only accept value interpolations, not functions.')
+      if (val_type !== 'VALUE')
+        throw new Error(
+          'IN statements only accept value interpolations, not functions.'
+        )
 
       // @ts-ignore
       const new_cwd = interps[val_id]
-      if (!new_cwd || typeof new_cwd !== 'string') throw new Error(`IN statements need a string value to set as the current working dir`)
+      if (!new_cwd || typeof new_cwd !== 'string')
+        throw new Error(
+          `IN statements need a string value to set as the current working dir`
+        )
 
       return execute(interps, in_clause, last_cmd, new_cwd)
     } else if (chunk.tag === 'grammar') {
@@ -87,10 +96,12 @@ const execute = async (
   return last_cmd
 }
 
-const shellac = async (
+type ShellacImpl = (
   s: TemplateStringsArray,
   ...interps: ShellacInterpolations[]
-): Promise<ShellacReturnVal> => {
+) => Promise<ShellacReturnVal>
+
+const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   let str = s[0]
 
   for (let i = 0; i < interps.length; i++) {
@@ -107,13 +118,16 @@ const shellac = async (
 
   // console.log(parsed)
 
-  const last_cmd = await execute(interps, parsed, null, process.cwd())
+  const last_cmd = await execute(interps, parsed, null, cwd)
 
   return {
     stdout: last_cmd?.stdout || '',
     stderr: last_cmd?.stderr || '',
   }
 }
-shellac.in = (cwd: string) => shellac
+
+const shellac = Object.assign(_shellac(process.cwd()), {
+  in: (cwd: string) => _shellac(cwd),
+})
 
 export default shellac
