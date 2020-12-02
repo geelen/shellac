@@ -38,11 +38,24 @@ const in_statement = match('in_statement')`
 const await_statement = match('await_statement')`
   (?: ${ignored}? ${/await\s+/})
   ${identifier}
-  (?: ${ignored}?)    
+  (?: ${ignored}?)
+`
+
+const stdout_statement = match('stdout_statement')`
+  (?: ${ignored}? ${/stdout\s+>>\s+/})
+  ${identifier}
+  (?: ${ignored}?)
 `
 
 const grammar = match('grammar')`
-  ( (?: ${ignored}) | ${command_line} | ${if_statement} | ${in_statement} | ${await_statement} )+
+  (
+    (?: ${ignored})
+    | ${command_line}
+    | ${if_statement}
+    | ${in_statement}
+    | ${await_statement}
+    | ${stdout_statement}
+  )+
 `
 
 export default parse(grammar)

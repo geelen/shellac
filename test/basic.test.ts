@@ -108,4 +108,25 @@ describe('getting started', () => {
     `
     expect(pwd2).toBe('a.file\ngenerated.by.js')
   })
+
+  it('should emit stdout blocks', async () => {
+    let invocations = 0
+
+    const { stdout } = await shellac`
+      $ echo "Line one"
+      stdout >> ${(line_one) => {
+        invocations++
+        expect(line_one).toBe('Line one')
+      }}
+      
+      $ echo "Line two"
+      stdout >> ${(line_two) => {
+        invocations++
+        expect(line_two).toBe('Line two')
+      }}
+    `
+
+    expect(stdout).toBe('Line two')
+    expect(invocations).toBe(2)
+  })
 })
