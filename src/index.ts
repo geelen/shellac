@@ -40,27 +40,36 @@ export const log_parse_result = (
   }
 }
 
+type ExecResult = ExecaSyncReturnValue | null;
+
 const execute = async (
   interps: ShellacInterpolations[],
   chunk: ParseResult
-) => {
+): Promise<ExecResult> => {
+  // console.log({ chunk })
   if (Array.isArray(chunk)) {
     if (chunk.tag === 'command_line') {
       const [str] = chunk as string[]
       return execa.command(str, { shell: true })
     } else if (chunk.tag === 'if_statement') {
-      console.log({ chunk })
       const [[val_type, val_id], if_clause, else_clause] = chunk
-      console.log({val_type, val_id, if_clause, else_clause})
+      // console.log({val_type, val_id, if_clause, else_clause})
       if (val_type !== 'VALUE') throw new Error('If statements only accept value interpolations, not functions.')
 
       // @ts-ignore
       if (interps[val_id]) {
-        console.log("IF STATEMENT IS TRUE")
+        // console.log("IF STATEMENT IS TRUE")
+        return execute(interps, if_clause)
       } else if (else_clause) {
-        console.log("IF STATEMENT IS FALSE")
-
+        // console.log("IF STATEMENT IS FALSE")
+        return execute(interps, else_clause)
       }
+    } else if (chunk.tag === 'grammar') {
+      let last_cmd: ExecResult = null
+      for (const sub of chunk) {
+        last_cmd = await execute(interps, sub)
+      }
+      return last_cmd
     }
   }
 
@@ -80,18 +89,14 @@ const shellac = async (
 
   if (str.length === 0) throw new Error('Must provide statements')
 
-  console.log(str)
+  // console.log(str)
 
   const parsed = parser(str)
   if (!parsed || typeof parsed === 'string') throw new Error('Parsing error!')
 
   // console.log(parsed)
 
-  let last_cmd: ExecaSyncReturnValue | null = null
-
-  for (const chunk of parsed) {
-    last_cmd = await execute(interps, chunk)
-  }
+  const last_cmd = await execute(interps, parsed)
 
   return {
     stdout: last_cmd?.stdout || '',
