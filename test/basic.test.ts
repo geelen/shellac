@@ -50,18 +50,34 @@ describe('getting started', () => {
   it('should handle a nested if statement', async () => {
     for (const value of ['A','B','C']) {
       const { stdout } = await shellac`
-      $ echo easy as
-      if ${value === 'A'} {
-        $ echo one
-      } else {
-        $ echo two
-        if ${value === 'C'} {
-          $ echo three
+        $ echo easy as
+        if ${value === 'A'} {
+          $ echo one
+        } else {
+          $ echo two
+          if ${value === 'C'} {
+            $ echo three
+          }
         }
-      }
-    `
+      `
 
       expect(stdout).toBe(value === 'A' ? 'one' : value === 'B' ? 'two' : 'three')
     }
+  })
+
+  it('should handle an IN statement', async () => {
+    const { stdout: orig_dir } = await shellac`
+      $ pwd
+    `
+    expect(orig_dir).toBe(process.cwd())
+
+    const { stdout: file_dir } = await shellac`
+      in ${ __dirname } {
+        $ pwd
+      }
+    `
+    expect(file_dir).toBe(__dirname)
+
+
   })
 })

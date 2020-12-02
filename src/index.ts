@@ -45,13 +45,14 @@ type ExecResult = ExecaSyncReturnValue | null;
 const execute = async (
   interps: ShellacInterpolations[],
   chunk: ParseResult,
-  last_cmd: ExecResult
+  last_cmd: ExecResult,
+  cwd: string
 ): Promise<ExecResult> => {
   // console.log({ chunk })
   if (Array.isArray(chunk)) {
     if (chunk.tag === 'command_line') {
       const [str] = chunk as string[]
-      return execa.command(str, { shell: true })
+      return execa.command(str, { shell: true, cwd })
     } else if (chunk.tag === 'if_statement') {
       const [[val_type, val_id], if_clause, else_clause] = chunk
       // console.log({val_type, val_id, if_clause, else_clause})
@@ -60,15 +61,24 @@ const execute = async (
       // @ts-ignore
       if (interps[val_id]) {
         // console.log("IF STATEMENT IS TRUE")
-        return execute(interps, if_clause, last_cmd)
+        return execute(interps, if_clause, last_cmd, cwd)
       } else if (else_clause) {
         // console.log("IF STATEMENT IS FALSE")
-        return execute(interps, else_clause, last_cmd)
+        return execute(interps, else_clause, last_cmd, cwd)
       }
+    } else if (chunk.tag === 'in_statement') {
+      const [[val_type, val_id], in_clause] = chunk
+      if (val_type !== 'VALUE') throw new Error('IN statements only accept value interpolations, not functions.')
+
+      // @ts-ignore
+      const new_cwd = interps[val_id]
+      if (!new_cwd || typeof new_cwd !== 'string') throw new Error(`IN statements need a string value to set as the current working dir`)
+
+      return execute(interps, in_clause, last_cmd, new_cwd)
     } else if (chunk.tag === 'grammar') {
       let new_last_cmd = last_cmd
       for (const sub of chunk) {
-        new_last_cmd = await execute(interps, sub, new_last_cmd)
+        new_last_cmd = await execute(interps, sub, new_last_cmd, cwd)
       }
       return new_last_cmd
     }
@@ -97,7 +107,7 @@ const shellac = async (
 
   // console.log(parsed)
 
-  const last_cmd = await execute(interps, parsed, null)
+  const last_cmd = await execute(interps, parsed, null, process.cwd())
 
   return {
     stdout: last_cmd?.stdout || '',

@@ -26,8 +26,17 @@ const if_statement = match('if_statement')`
   )?
 `
 
+const in_statement = match('in_statement')`
+  (?: ${ignored}? ${/in\s+/})
+  ${identifier}
+  (?: ${ignored}?)
+  (?: ${/{/} ${ignored}?)
+  ${grammar}
+  (?: ${ignored}? ${/}/})
+`
+
 const grammar = match('grammar')`
-  ( (?: ${ignored}) | ${command_line} | ${if_statement} )+
+  ( (?: ${ignored}) | ${command_line} | ${if_statement} | ${in_statement} )+
 `
 
 export default parse(grammar)

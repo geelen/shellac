@@ -132,4 +132,24 @@ describe('parser', () => {
             command_line: echo boats
     `)
   })
+
+  it('should parse an in statement', () => {
+    expect(
+      parser(`
+        $ pwd
+        in VALUE_1 {
+          $ pwd
+        }
+      `)
+    ).toParseTo(`
+      grammar:
+        command_line: pwd
+        in_statement:
+          identifier:
+            VALUE
+            1
+          grammar:
+            command_line: pwd
+    `)
+  })
 })
