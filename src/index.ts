@@ -7,6 +7,7 @@ export type ShellacInterpolations =
   | string
   | boolean
   | undefined
+  | number
   | null
   | ((a: string) => void)
   | (() => Promise<void>)
