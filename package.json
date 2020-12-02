@@ -2,11 +2,13 @@
   "name": "shellac",
   "version": "0.0.1",
   "description": "Protect and beautify your shell scripting",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build:parser": "babel src/parser.js -d lib",
     "build:ts": "tsc --outDir lib",
     "build": "yarn build:parser && yarn build:ts",
+    "prepack": "npm run build",
     "test": "jest"
   },
   "repository": {
