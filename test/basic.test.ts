@@ -148,21 +148,22 @@ describe('getting started', () => {
 
   it('should create files and directories', async () => {
     const dir = await tmp.dir({ unsafeCleanup: true })
-    const expected = [
-      path.basename(dir.path),
-      '├── some',
-      '│   └── dir',
-      '│       └── echoed.file',
-      '└── some.file',
-    ].join('\n')
-
     await shellac.in(dir.path)`
       $ touch some.file
       $ mkdir -p some/dir
       $ echo "[FAB CI] NextJS — Branch ${Math.random()}" >> some/dir/echoed.file
       $ npx tree-node-cli
       
-      stdout >> ${(tree) => expect(tree).toBe(expected)}
+      stdout >> ${async (tree) =>
+        expect(tree).toBe(
+          [
+            path.basename(dir.path),
+            '├── some',
+            '│   └── dir',
+            '│       └── echoed.file',
+            '└── some.file',
+          ].join('\n')
+        )}
     `
   })
 })

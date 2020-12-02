@@ -10,6 +10,7 @@ export type ShellacInterpolations =
   | number
   | null
   | ((a: string) => void)
+  | ((a: string) => Promise<void>)
   | (() => Promise<void>)
 
 export type ShellacReturnVal = {
