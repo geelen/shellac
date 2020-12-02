@@ -44,7 +44,8 @@ type ExecResult = ExecaSyncReturnValue | null;
 
 const execute = async (
   interps: ShellacInterpolations[],
-  chunk: ParseResult
+  chunk: ParseResult,
+  last_cmd: ExecResult
 ): Promise<ExecResult> => {
   // console.log({ chunk })
   if (Array.isArray(chunk)) {
@@ -59,21 +60,21 @@ const execute = async (
       // @ts-ignore
       if (interps[val_id]) {
         // console.log("IF STATEMENT IS TRUE")
-        return execute(interps, if_clause)
+        return execute(interps, if_clause, last_cmd)
       } else if (else_clause) {
         // console.log("IF STATEMENT IS FALSE")
-        return execute(interps, else_clause)
+        return execute(interps, else_clause, last_cmd)
       }
     } else if (chunk.tag === 'grammar') {
-      let last_cmd: ExecResult = null
+      let new_last_cmd = last_cmd
       for (const sub of chunk) {
-        last_cmd = await execute(interps, sub)
+        new_last_cmd = await execute(interps, sub, new_last_cmd)
       }
-      return last_cmd
+      return new_last_cmd
     }
   }
 
-  return null
+  return last_cmd
 }
 
 const shellac = async (
@@ -96,7 +97,7 @@ const shellac = async (
 
   // console.log(parsed)
 
-  const last_cmd = await execute(interps, parsed)
+  const last_cmd = await execute(interps, parsed, null)
 
   return {
     stdout: last_cmd?.stdout || '',

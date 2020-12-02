@@ -33,4 +33,17 @@ describe('getting started', () => {
       expect(stdout).toBe(value ? 'lol' : 'boats')
     }
   })
+
+  it('should handle an if-else statement', async () => {
+    for (const value of [true, false]) {
+      const { stdout } = await shellac`
+      $ echo lol
+      if ${value} {
+        $ echo boats
+      }
+    `
+
+      expect(stdout).toBe(value ? 'boats' : 'lol')
+    }
+  })
 })
