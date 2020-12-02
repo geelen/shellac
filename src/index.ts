@@ -100,14 +100,18 @@ const execute = async (
       // @ts-ignore
       await interps[val_id]()
     } else if (chunk.tag === 'stdout_statement') {
-      const [[val_type, val_id]] = chunk
+      const [out_or_err, [val_type, val_id]] = chunk
+      if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
+        throw new Error(
+          `Expected only 'stdout' or 'stderr', got: ${out_or_err}`
+        )
       if (val_type !== 'FUNCTION')
         throw new Error(
           'STDOUT/STDERR statements only accept function interpolations, not values.'
         )
 
       // @ts-ignore
-      await interps[val_id](last_cmd?.stdout || '')
+      await interps[val_id](last_cmd?.[out_or_err] || '')
     }
   }
 

@@ -129,4 +129,20 @@ describe('getting started', () => {
     expect(stdout).toBe('Line two')
     expect(invocations).toBe(2)
   })
+
+  it('should emit stderr blocks', async () => {
+    let invocations = 0
+
+    const { stdout, stderr } = await shellac`
+      $ echo "This going to stderr" >&2
+      stderr >> ${(inline_stderr) => {
+        invocations++
+        expect(inline_stderr).toBe('This going to stderr')
+      }}
+    `
+
+    expect(stdout).toBe('')
+    expect(stderr).toBe('This going to stderr')
+    expect(invocations).toBe(1)
+  })
 })

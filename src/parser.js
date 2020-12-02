@@ -42,7 +42,9 @@ const await_statement = match('await_statement')`
 `
 
 const stdout_statement = match('stdout_statement')`
-  (?: ${ignored}? ${/stdout\s+>>\s+/})
+  (?: ${ignored}? )
+  ${/std(out|err)/}
+  (?: ${/\s+>>\s+/} )
   ${identifier}
   (?: ${ignored}?)
 `
