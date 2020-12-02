@@ -5,7 +5,7 @@ A tool to make invoking a series of shell commands safer & better-looking:
 ```js
 // jest-example.test.js
 
-import shellac from 'shellac'
+const shellac = require('shellac')
 
 describe('my CLI tool', () => {
   it('should do everything I need', async () =>

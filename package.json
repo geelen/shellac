@@ -17,6 +17,9 @@
   "author": "Glen Maddern",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "files": [
+    "/lib"
+  ],
   "scripts": {
     "build": "yarn build:parser && yarn build:ts",
     "build:parser": "babel src/parser.js -d lib",
