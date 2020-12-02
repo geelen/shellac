@@ -43,12 +43,14 @@ export const log_parse_result = (
 }
 
 type ExecResult = ExecaSyncReturnValue | null
+type Captures = { [key: string]: string }
 
 const execute = async (
   interps: ShellacInterpolations[],
   chunk: ParseResult,
   last_cmd: ExecResult,
-  cwd: string
+  cwd: string,
+  captures: Captures
 ): Promise<ExecResult> => {
   // console.log({ chunk })
   if (Array.isArray(chunk)) {
@@ -66,10 +68,10 @@ const execute = async (
       // @ts-ignore
       if (interps[val_id]) {
         // console.log("IF STATEMENT IS TRUE")
-        return execute(interps, if_clause, last_cmd, cwd)
+        return execute(interps, if_clause, last_cmd, cwd, captures)
       } else if (else_clause) {
         // console.log("IF STATEMENT IS FALSE")
-        return execute(interps, else_clause, last_cmd, cwd)
+        return execute(interps, else_clause, last_cmd, cwd, captures)
       }
     } else if (chunk.tag === 'in_statement') {
       const [[val_type, val_id], in_clause] = chunk
@@ -85,11 +87,11 @@ const execute = async (
           `IN statements need a string value to set as the current working dir`
         )
 
-      return execute(interps, in_clause, last_cmd, new_cwd)
+      return execute(interps, in_clause, last_cmd, new_cwd, captures)
     } else if (chunk.tag === 'grammar') {
       let new_last_cmd = last_cmd
       for (const sub of chunk) {
-        new_last_cmd = await execute(interps, sub, new_last_cmd, cwd)
+        new_last_cmd = await execute(interps, sub, new_last_cmd, cwd, captures)
       }
       return new_last_cmd
     } else if (chunk.tag === 'await_statement') {
@@ -102,18 +104,30 @@ const execute = async (
       // @ts-ignore
       await interps[val_id]()
     } else if (chunk.tag === 'stdout_statement') {
-      const [out_or_err, [val_type, val_id]] = chunk
+      const [out_or_err, second] = chunk
       if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
         throw new Error(
           `Expected only 'stdout' or 'stderr', got: ${out_or_err}`
         )
-      if (val_type !== 'FUNCTION')
-        throw new Error(
-          'STDOUT/STDERR statements only accept function interpolations, not values.'
-        )
-
+      const capture = last_cmd?.[out_or_err] || ''
       // @ts-ignore
-      await interps[val_id](last_cmd?.[out_or_err] || '')
+      const tag: string = second.tag
+      if (tag === 'identifier') {
+        const [val_type, val_id] = second
+        if (val_type !== 'FUNCTION')
+          throw new Error(
+            'STDOUT/STDERR statements only accept function interpolations, not values.'
+          )
+
+        // @ts-ignore
+        await interps[val_id](capture)
+      } else if (tag === 'variable_name') {
+        captures[second[0] as string] = capture
+      } else {
+        throw new Error(
+          'STDOUT/STDERR statements expect a variable name or an interpolation function.'
+        )
+      }
     }
   }
 
@@ -141,12 +155,14 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   if (!parsed || typeof parsed === 'string') throw new Error('Parsing error!')
 
   // console.log(parsed)
+  const captures: Captures = {}
 
-  const last_cmd = await execute(interps, parsed, null, cwd)
+  const last_cmd = await execute(interps, parsed, null, cwd, captures)
 
   return {
     stdout: last_cmd?.stdout || '',
     stderr: last_cmd?.stderr || '',
+    ...captures,
   }
 }
 

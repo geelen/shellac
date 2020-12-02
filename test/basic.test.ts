@@ -166,4 +166,31 @@ describe('getting started', () => {
         )}
     `
   })
+
+  it('should permit multiple return values', async () => {
+    const dir = await tmp.dir({ unsafeCleanup: true })
+    const { default_branch, current_branch, current_sha } = await shellac.in(
+      dir.path
+    )`
+      $ git init
+      $ echo "SOME CONTENTS" >> some.file
+      $ git add .
+      $ git commit -m 'rando'
+      
+      $ git rev-parse --abbrev-ref HEAD
+      stdout >> default_branch
+      
+      $ git checkout -b new-branch
+      
+      $ git rev-parse --abbrev-ref HEAD
+      stdout >> current_branch
+      
+      $ git rev-parse --short HEAD
+      stdout >> current_sha
+    `
+
+    expect(default_branch).toEqual('master')
+    expect(current_branch).toEqual('new-branch')
+    expect(current_sha).toMatch(/^[a-f0-9]{7}$/)
+  })
 })

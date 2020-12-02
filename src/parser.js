@@ -12,6 +12,10 @@ const identifier = match('identifier')`
   ${/VALUE|FUNCTION/} (?: ${/_/}) ${/\d+/}
 `
 
+const variable_name = match('variable_name')`
+  ${/\S+/}
+`
+
 const if_statement = match('if_statement')`
   (?: ${ignored}? ${/if\s+/})
   ${identifier}
@@ -45,7 +49,7 @@ const stdout_statement = match('stdout_statement')`
   (?: ${ignored}? )
   ${/std(out|err)/}
   (?: ${/\s+>>\s+/} )
-  ${identifier}
+  ( ${identifier} | ${variable_name} )  
   (?: ${ignored}?)
 `
 
