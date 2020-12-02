@@ -34,7 +34,7 @@ describe('getting started', () => {
     }
   })
 
-  it('should handle an if-else statement', async () => {
+  it('should handle an if statement with no else', async () => {
     for (const value of [true, false]) {
       const { stdout } = await shellac`
       $ echo lol
@@ -44,6 +44,24 @@ describe('getting started', () => {
     `
 
       expect(stdout).toBe(value ? 'boats' : 'lol')
+    }
+  })
+
+  it('should handle a nested if statement', async () => {
+    for (const value of ['A','B','C']) {
+      const { stdout } = await shellac`
+      $ echo easy as
+      if ${value === 'A'} {
+        $ echo one
+      } else {
+        $ echo two
+        if ${value === 'C'} {
+          $ echo three
+        }
+      }
+    `
+
+      expect(stdout).toBe(value === 'A' ? 'one' : value === 'B' ? 'two' : 'three')
     }
   })
 })
