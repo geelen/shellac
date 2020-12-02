@@ -56,7 +56,9 @@ const execute = async (
   if (Array.isArray(chunk)) {
     if (chunk.tag === 'command_line') {
       const [str] = chunk as string[]
-      return execa.command(str, { shell: true, cwd })
+      // @ts-ignore
+      const command = str.replace(/#__VALUE_(\d+)__#/g, (_,i) => interps[i])
+      return execa.command(command, { shell: true, cwd })
     } else if (chunk.tag === 'if_statement') {
       const [[val_type, val_id], if_clause, else_clause] = chunk
       // console.log({val_type, val_id, if_clause, else_clause})

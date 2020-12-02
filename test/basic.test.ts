@@ -47,7 +47,7 @@ describe('getting started', () => {
     `
   })
 
-  it.only('should handle an if-else statement', async () => {
+  it('should handle an if-else statement', async () => {
     for (const value of [true, false]) {
       const { stdout } = await shellac`
       if ${value} {
