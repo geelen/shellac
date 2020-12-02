@@ -152,4 +152,20 @@ describe('parser', () => {
             command_line: pwd
     `)
   })
+
+  it('should parse an await statement', () => {
+    expect(
+      parser(`
+        await FUNCTION_2
+        $ ls
+      `)
+    ).toParseTo(`
+      grammar:
+        await_statement:
+          identifier:
+            FUNCTION
+            2
+        command_line: ls
+    `)
+  })
 })

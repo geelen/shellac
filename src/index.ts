@@ -90,6 +90,15 @@ const execute = async (
         new_last_cmd = await execute(interps, sub, new_last_cmd, cwd)
       }
       return new_last_cmd
+    } else if (chunk.tag === 'await_statement') {
+      const [[val_type, val_id]] = chunk
+      if (val_type !== 'FUNCTION')
+        throw new Error(
+          'IN statements only accept function interpolations, not values.'
+        )
+
+      // @ts-ignore
+      await interps[val_id]()
     }
   }
 

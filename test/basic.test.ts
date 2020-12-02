@@ -1,5 +1,7 @@
 import shellac from '../src'
 import * as tmp from 'tmp-promise'
+import fs from 'fs-extra'
+import path from 'path'
 
 describe('getting started', () => {
   it('should run a simple command', async () => {
@@ -49,7 +51,7 @@ describe('getting started', () => {
   })
 
   it('should handle a nested if statement', async () => {
-    for (const value of ['A','B','C']) {
+    for (const value of ['A', 'B', 'C']) {
       const { stdout } = await shellac`
         $ echo easy as
         if ${value === 'A'} {
@@ -62,7 +64,9 @@ describe('getting started', () => {
         }
       `
 
-      expect(stdout).toBe(value === 'A' ? 'one' : value === 'B' ? 'two' : 'three')
+      expect(stdout).toBe(
+        value === 'A' ? 'one' : value === 'B' ? 'two' : 'three'
+      )
     }
   })
 
@@ -73,7 +77,7 @@ describe('getting started', () => {
     expect(orig_dir).toBe(process.cwd())
 
     const { stdout: file_dir } = await shellac`
-      in ${ __dirname } {
+      in ${__dirname} {
         $ pwd
       }
     `
@@ -85,18 +89,23 @@ describe('getting started', () => {
     expect(helper_dir).toBe(__dirname)
   })
 
-  // it('should await async blocks', async () => {
-  //   const dir = tmp.dir()
-  //   await shellac`
-  //     $ pwd
-  //   `
-  //   expect(orig_dir).toBe(process.cwd())
-  //
-  //   const { stdout: file_dir } = await shellac`
-  //     in ${ __dirname } {
-  //       $ pwd
-  //     }
-  //   `
-  //   expect(file_dir).toBe(__dirname)
-  // })
+  it('should await async blocks', async () => {
+    const dir = await tmp.dir({ unsafeCleanup: true })
+    const { stdout: pwd1 } = await shellac.in(dir.path)`
+      $ echo "lol boats" > a.file
+      $ ls
+    `
+    expect(pwd1).toBe('a.file')
+
+    const { stdout: pwd2 } = await shellac.in(dir.path)`
+      await ${async () => {
+        await fs.writeFile(
+          path.join(dir.path, 'generated.by.js'),
+          'some content here'
+        )
+      }}
+      $ ls
+    `
+    expect(pwd2).toBe('a.file\ngenerated.by.js')
+  })
 })

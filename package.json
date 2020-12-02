@@ -24,7 +24,9 @@
   "homepage": "https://github.com/geelen/shellac#readme",
   "devDependencies": {
     "@babel/preset-env": "^7.12.7",
+    "@types/fs-extra": "^9.0.4",
     "@types/jest": "^26.0.15",
+    "fs-extra": "^9.0.1",
     "jest": "^26.6.3",
     "tmp-promise": "^3.0.2",
     "ts-jest": "^26.4.4",
