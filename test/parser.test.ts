@@ -96,7 +96,7 @@ describe('parser', () => {
   it('should parse an if statement', () => {
     expect(
       parser(`
-        if VALUE_0 {
+        if #__VALUE_0__# {
           $ echo lol
         }
       `)
@@ -114,7 +114,7 @@ describe('parser', () => {
   it('should parse an if-else statement', () => {
     expect(
       parser(`
-        if VALUE_0 {
+        if #__VALUE_0__# {
           $ echo lol
         } else {
           $ echo boats
@@ -137,7 +137,7 @@ describe('parser', () => {
     expect(
       parser(`
         $ pwd
-        in VALUE_1 {
+        in #__VALUE_1__# {
           $ pwd
         }
       `)
@@ -156,7 +156,7 @@ describe('parser', () => {
   it('should parse an await statement', () => {
     expect(
       parser(`
-        await FUNCTION_2
+        await #__FUNCTION_2__#
         $ ls
       `)
     ).toParseTo(`

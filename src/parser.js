@@ -9,7 +9,7 @@ const command_line = match('command_line')`
 `
 
 const identifier = match('identifier')`
-  ${/VALUE|FUNCTION/} (?: ${/_/}) ${/\d+/}
+  (?:${/#__/}) ${/VALUE|FUNCTION/} (?: ${/_/}) ${/\d+/} (?:${/__#/})
 `
 
 const variable_name = match('variable_name')`

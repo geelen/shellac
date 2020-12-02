@@ -143,8 +143,9 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   let str = s[0]
 
   for (let i = 0; i < interps.length; i++) {
-    let is_fn = typeof interps[i] === 'function'
-    str = `${str}${is_fn ? 'FUNCTION_' : 'VALUE_'}${i}${s[i + 1]}`
+    const is_fn = typeof interps[i] === 'function';
+    const interp_placeholder = `#__${is_fn ? 'FUNCTION_' : 'VALUE_'}${i}__#`
+    str += interp_placeholder + s[i + 1]
   }
 
   if (str.length === 0) throw new Error('Must provide statements')

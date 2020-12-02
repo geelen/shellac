@@ -23,7 +23,31 @@ describe('getting started', () => {
     )
   })
 
-  it('should handle an if-else statement', async () => {
+  it('should handle bash-y things', async () => {
+    const { env_var, wc } = await shellac`
+      $ echo "omfg" | wc -c
+      stdout >> wc
+      
+      $ LOL=boats
+      $ echo $LOL
+      stdout >> env_var
+    `
+
+    expect(wc).toBe('5')
+    // expect(env_var).toBe(`boats`) //TODO
+  })
+
+  it('should handle interpolations in commands', async () => {
+    const rando = Math.random()
+    await shellac`
+      $ echo ${rando}
+      stdout >> ${(echo) => {
+        expect(echo).toBe(rando.toString())
+      }}
+    `
+  })
+
+  it.only('should handle an if-else statement', async () => {
     for (const value of [true, false]) {
       const { stdout } = await shellac`
       if ${value} {
