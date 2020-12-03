@@ -1,11 +1,12 @@
 # Shellac
 
-A tool to make invoking a series of shell commands safer & better-looking:
+A tool to make invoking a series of shell commands safer & better-looking.
+
+Works great with [ts-jest](https://github.com/kulshekhar/ts-jest#getting-started):
 
 ```js
-// jest-example.test.js
-
-const shellac = require('shellac')
+// ts-jest-example.test.js
+import shellac from 'shellac'
 
 describe('my CLI tool', () => {
   it('should do everything I need', async () =>
@@ -33,5 +34,21 @@ describe('my CLI tool', () => {
       $ run-app
     }
   `)
+})
+```
+
+Using CommonJS, import it like:
+
+```js
+const test = require('ava')
+const shellac = require('shellac').default
+
+test('plugin should be installable', async (t) => {
+  await shellac.default`
+    $ echo "Hello, world!"
+    stdout >> ${(echo) => {
+      t.is(echo, 'Hello, world!')
+    }}
+  `
 })
 ```
