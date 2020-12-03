@@ -16,30 +16,28 @@ test('morty', async () => await shellac`
 
 ## Syntax
 
-```
-$ my command here
-  executes commands
-$$ my command here
-  executes and streams logs while the test runs
+`$ my command here`<br/>executes commands
 
-stdout >> ${ str => ... }
-  gives you 'str' as the output of the most recent command
-stdout >> var_name
-  makes the shellac command return { var_name: latest_stdout } instead
+`$$ my command here`<br/>executes and streams logs while the test runs
+
+`stdout >> ${ str => ... }`
+<br/>gives you 'str' as the output of the most recent command
+
+`stdout >> var_name`
+<br/>makes the shellac command return { var_name: latest_stdout } instead
 
 ^ both these work for stderr too
 
-in ${ dir } { ... }
-  lets you change dir for a series of commands
+`in ${ dir } { ... }`
+<br/>lets you change dir for a series of commands
 
 ^ This last one has an alias of shellac.in(dir)` ... `
 
-await ${ async () => { ... } }
-  lets you pause the script while you do some dank JS
+`await ${ async () => { ... } }`
+<br/>lets you pause the script while you do some dank JS
 
-// single-line-comments
-  JS-style single-line comments work
-```
+`// single-line-comments`
+<br/>JS-style single-line comments work
 
 ## Example
 
