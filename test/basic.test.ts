@@ -227,3 +227,9 @@ describe('getting started', () => {
     expect(current_sha).toMatch(/^[a-f0-9]{7}$/)
   })
 })
+
+test('morty', async () => await shellac`
+  $ echo "End-to-end CLI testing made nice"
+  $ node -p "5 * 9"
+  stdout >> ${ answer => expect(Number(answer)).toBeGreaterThan(40) }
+`)

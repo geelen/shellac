@@ -4,6 +4,45 @@ A tool to make invoking a series of shell commands safer & better-looking.
 
 ## Usage
 
+```js
+import shellac from 'shellac'
+
+test('morty', async () => await shellac`
+  $ echo "End-to-end CLI testing made nice"
+  $ node -p "5 * 9"
+  stdout >> ${ answer => expect(Number(answer)).toBeGreaterThan(40) }
+`)
+```
+
+## Syntax
+
+```
+$ my command here
+  executes commands
+$$ my command here
+  executes and streams logs while the test runs
+
+stdout >> ${ str => ... }
+  gives you 'str' as the output of the most recent command
+stdout >> var_name
+  makes the shellac command return { var_name: latest_stdout } instead
+
+^ both these work for stderr too
+
+in ${ dir } { ... }
+  lets you change dir for a series of commands
+
+^ This last one has an alias of shellac.in(dir)` ... `
+
+await ${ async () => { ... } }
+  lets you pause the script while you do some dank JS
+
+// single-line-comments
+  JS-style single-line comments work
+```
+
+## Example
+
 Works great with [ts-jest](https://github.com/kulshekhar/ts-jest#getting-started):
 
 ```js
@@ -55,7 +94,7 @@ test('plugin should be installable', async (t) => {
 })
 ```
 
-## Examples
+### Snippets
 
 Use double-$ `$$` for logging while the test runs:
 
