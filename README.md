@@ -42,6 +42,7 @@ await shellac`
 
 `// single-line-comments` JS-style single-line comments work
 
+
 ## Example
 
 Works great with [ts-jest](https://github.com/kulshekhar/ts-jest#getting-started):
@@ -51,31 +52,32 @@ Works great with [ts-jest](https://github.com/kulshekhar/ts-jest#getting-started
 import shellac from 'shellac'
 
 describe('my CLI tool', () => {
-  it('should do everything I need', async () =>
+  it('should do everything I need', async () => {
     await shellac`
-    $ echo "Hello, world!"
-    stdout >> ${(echo) => {
-      expect(echo).toBe('Hello, world!')
-    }}
-    
-    $ rm -rf working-dir
-    $ mkdir -p working-dir/example
-    $ cp -R fixtures/run-1/* working-dir/example
-    
-    await ${async () => {
-      // generate some more test data
-    }}
-    
-    in ${'working-dir/example'} {
-      $ ls -l
-      stdout >> ${(files) => {
-        expect(files).toMatch('package.json')
+      $ echo "Hello, world!"
+      stdout >> ${(echo) => {
+        expect(echo).toBe('Hello, world!')
       }}
       
-      $ yarn
-      $$ run-app
-    }
-  `)
+      $ rm -rf working-dir
+      $ mkdir -p working-dir/example
+      $ cp -R fixtures/run-1/* working-dir/example
+      
+      await ${async () => {
+        // generate some more test data
+      }}
+      
+      in ${'working-dir/example'} {
+        $ ls -l
+        stdout >> ${(files) => {
+          expect(files).toMatch('package.json')
+        }}
+        
+        $ yarn
+        $$ run-app
+      }
+    `
+  })
 })
 ```
 
