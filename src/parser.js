@@ -4,6 +4,12 @@ const ignored = match('ignored')`
   ${/([\s,]|#[^\n\r]+)+/}
 `;
 
+const comment_line = match('comment_line')`
+  (?: ${ignored}? ${/\/\/\s+/})
+  ${ /[^\n\r]*/ }
+  (?: ${ignored}? )
+`
+
 const command_line = match('command_line')`
   (?: ${ignored}? ${/\$\s+/}) ${/.*/}
 `
@@ -56,6 +62,7 @@ const stdout_statement = match('stdout_statement')`
 const grammar = match('grammar')`
   (
     (?: ${ignored})
+    | ${comment_line}
     | ${command_line}
     | ${if_statement}
     | ${in_statement}

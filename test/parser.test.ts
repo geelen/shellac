@@ -169,19 +169,22 @@ describe('parser', () => {
     `)
   })
 
-  it('should ignore comments statement', () => {
+  it('should parse comments', () => {
     expect(
       parser(`
-        await #__FUNCTION_2__#
-        $ ls
+        // comment here
+        $ ls -l
+        // second comment
+        $ echo lol
+        // third comment
       `)
     ).toParseTo(`
       grammar:
-        await_statement:
-          identifier:
-            FUNCTION
-            2
-        command_line: ls
+        comment_line: comment here
+        command_line: ls -l
+        comment_line: second comment
+        command_line: echo lol
+        comment_line: third comment
     `)
   })
 })

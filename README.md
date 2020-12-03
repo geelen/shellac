@@ -33,7 +33,7 @@ describe('my CLI tool', () => {
       }}
       
       $ yarn
-      $ run-app
+      $$ run-app
     }
   `)
 })
@@ -57,7 +57,15 @@ test('plugin should be installable', async (t) => {
 
 ## Examples
 
-Super useful for debugging:
+Use double-$ `$$` for logging while the test runs:
+
+```js
+shellac.in(cwd)`
+  $$ ls -al
+`
+```
+
+is the same as:
 
 ```js
 shellac.in(cwd)`
@@ -66,3 +74,11 @@ shellac.in(cwd)`
 `
 ```
 
+Confirm a file is present:
+
+```js
+shellac`
+  $ ls -l
+  stdout >> ${files => expect(files).toMatch('fab.zip')}
+`
+```
