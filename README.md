@@ -29,11 +29,14 @@ await shellac`
 `$$ my command here` executes and streams logs while the test runs
 
 `stdout >> ${ str => ... }` gives you 'str' as the output of the most recent command
-<br/>`stdout >> var_name` makes the shellac command return `{ var_name: latest_stdout }` instead
-<br/> ^ both these work for stderr too
+
+`stdout >> var_name` makes the shellac command return `{ var_name: latest_stdout }` instead
+
+> Note: these work for `stderr` too
 
 `in ${ dir } { ... }` lets you change dir for a series of commands
-<br/> ^ This last one has an alias of shellac.in(dir)` ... `
+
+> Note: You can also use the alias of ``shellac.in(dir)` ... ` ``
 
 `await ${ async () => { ... } }` lets you pause the script while you do some dank JS
 
