@@ -16,9 +16,19 @@ test('morty', async () => await shellac`
 
 ## Syntax
 
-`$ my command here`<br/>executes commands
+Inside a shellac block:
 
-`$$ my command here`<br/>executes and streams logs while the test runs
+```js
+await shellac`
+  // commands
+`
+```
+
+`$ my command here`
+<br/>• executes commands
+
+`$$ my command here`
+<br/>—executes and streams logs while the test runs
 
 `stdout >> ${ str => ... }`
 <br/>gives you 'str' as the output of the most recent command
