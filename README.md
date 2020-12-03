@@ -124,3 +124,11 @@ shellac`
   stdout >> ${files => expect(files).toMatch('fab.zip')}
 `
 ```
+
+## Acknowledgements
+
+[`@kitten`](https://github.com/kitten) for [reghex](https://github.com/kitten/reghex) which is genuinely incredible and the only reason this library is possible at all.
+
+[`@superhighfives`](https://github.com/superhighfives) for coming up with the name!
+
+[`exactly`](https://github.com/emilkarlen/exactly), [`bats`](https://github.com/sstephenson/bats), [`Expect`](https://en.wikipedia.org/wiki/Expect), [`cram`](https://bitheap.org/cram/), [`aruba`](https://github.com/cucumber/aruba) for prior art.
