@@ -14,6 +14,10 @@ const command_line = match('command_line')`
   (?: ${ignored}? ${/\$\s+/}) ${/.*/}
 `
 
+const logged_command = match('logged_command')`
+  (?: ${ignored}? ${/\$\$\s+/}) ${/.*/}
+`
+
 const identifier = match('identifier')`
   (?:${/#__/}) ${/VALUE|FUNCTION/} (?: ${/_/}) ${/\d+/} (?:${/__#/})
 `
@@ -64,6 +68,7 @@ const grammar = match('grammar')`
     (?: ${ignored})
     | ${comment_line}
     | ${command_line}
+    | ${logged_command}
     | ${if_statement}
     | ${in_statement}
     | ${await_statement}

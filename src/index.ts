@@ -54,11 +54,18 @@ const execute = async (
 ): Promise<ExecResult> => {
   // console.log({ chunk })
   if (Array.isArray(chunk)) {
-    if (chunk.tag === 'command_line') {
+    if (chunk.tag === 'command_line' || chunk.tag === 'logged_command') {
       const [str] = chunk as string[]
       // @ts-ignore
-      const command = str.replace(/#__VALUE_(\d+)__#/g, (_,i) => interps[i])
-      return execa.command(command, { shell: true, cwd })
+      const command = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
+      if (chunk.tag === 'logged_command') {
+        const promise = execa.command(command, { shell: true, cwd })
+        promise.stdout!.pipe(process.stdout)
+        promise.stderr!.pipe(process.stderr)
+        return promise
+      } else {
+        return execa.command(command, { shell: true, cwd })
+      }
     } else if (chunk.tag === 'if_statement') {
       const [[val_type, val_id], if_clause, else_clause] = chunk
       // console.log({val_type, val_id, if_clause, else_clause})
@@ -145,7 +152,7 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   let str = s[0]
 
   for (let i = 0; i < interps.length; i++) {
-    const is_fn = typeof interps[i] === 'function';
+    const is_fn = typeof interps[i] === 'function'
     const interp_placeholder = `#__${is_fn ? 'FUNCTION_' : 'VALUE_'}${i}__#`
     str += interp_placeholder + s[i + 1]
   }

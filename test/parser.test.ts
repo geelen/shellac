@@ -187,4 +187,17 @@ describe('parser', () => {
         comment_line: third comment
     `)
   })
+
+  it('should parse passthrough logged lines', () => {
+    expect(
+      parser(`
+        $$ ls -l
+        $ echo lol
+      `)
+    ).toParseTo(`
+      grammar:
+        logged_command: ls -l
+        command_line: echo lol
+    `)
+  })
 })

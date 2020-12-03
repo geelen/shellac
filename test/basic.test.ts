@@ -185,7 +185,7 @@ describe('getting started', () => {
       $ touch some.file
       $ mkdir -p some/dir
       $ echo "[FAB CI] NextJS — Branch ${Math.random()}" >> some/dir/echoed.file
-      $ npx tree-node-cli
+      $$ npx tree-node-cli
       
       stdout >> ${async (tree) =>
         expect(tree).toBe(
