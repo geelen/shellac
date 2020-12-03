@@ -2,6 +2,8 @@
 
 A tool to make invoking a series of shell commands safer & better-looking.
 
+## Usage
+
 Works great with [ts-jest](https://github.com/kulshekhar/ts-jest#getting-started):
 
 ```js
@@ -52,3 +54,15 @@ test('plugin should be installable', async (t) => {
   `
 })
 ```
+
+## Examples
+
+Super useful for debugging:
+
+```js
+shellac.in(cwd)`
+  $ ls -al
+  stdout >> ${console.log}
+`
+```
+

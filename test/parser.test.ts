@@ -168,4 +168,20 @@ describe('parser', () => {
         command_line: ls
     `)
   })
+
+  it('should ignore comments statement', () => {
+    expect(
+      parser(`
+        await #__FUNCTION_2__#
+        $ ls
+      `)
+    ).toParseTo(`
+      grammar:
+        await_statement:
+          identifier:
+            FUNCTION
+            2
+        command_line: ls
+    `)
+  })
 })
