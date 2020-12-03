@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/geelen/shellac.git"
   },
-  "license": "ISC",
+  "license": "MIT",
   "author": "Glen Maddern",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
