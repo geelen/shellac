@@ -51,6 +51,89 @@ function Command(
   }
 }
 
+function InStatement(
+  chunk: Array<ParseResult> & { tag: string },
+  interps: ShellacInterpolations[],
+  last_cmd: execa.ExecaSyncReturnValue<string> | null,
+  captures: Captures
+) {
+  const [[val_type, val_id], in_clause] = chunk
+  if (val_type !== 'VALUE')
+    throw new Error(
+      'IN statements only accept value interpolations, not functions.'
+    )
+
+  // @ts-ignore
+  const new_cwd = interps[val_id]
+  if (!new_cwd || typeof new_cwd !== 'string')
+    throw new Error(
+      `IN statements need a string value to set as the current working dir`
+    )
+
+  return execute(interps, in_clause, last_cmd, new_cwd, captures)
+}
+
+async function Grammar(
+  last_cmd: execa.ExecaSyncReturnValue<string> | null,
+  chunk: Array<ParseResult> & { tag: string },
+  interps: ShellacInterpolations[],
+  cwd: string,
+  captures: Captures
+) {
+  let new_last_cmd = last_cmd
+  for (const sub of chunk) {
+    new_last_cmd = await execute(interps, sub, new_last_cmd, cwd, captures)
+  }
+  return new_last_cmd
+}
+
+async function Await(
+  chunk: Array<ParseResult> & { tag: string },
+  interps: ShellacInterpolations[],
+  last_cmd: execa.ExecaSyncReturnValue<string> | null
+) {
+  const [[val_type, val_id]] = chunk
+  if (val_type !== 'FUNCTION')
+    throw new Error(
+      'IN statements only accept function interpolations, not values.'
+    )
+
+  // @ts-ignore
+  await interps[val_id]()
+  return last_cmd
+}
+
+async function Stdout(
+  chunk: Array<ParseResult> & { tag: string },
+  last_cmd: execa.ExecaSyncReturnValue<string> | null,
+  interps: ShellacInterpolations[],
+  captures: Captures
+) {
+  const [out_or_err, second] = chunk
+  if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
+    throw new Error(`Expected only 'stdout' or 'stderr', got: ${out_or_err}`)
+  const capture = last_cmd?.[out_or_err] || ''
+  // @ts-ignore
+  const tag: string = second.tag
+  if (tag === 'identifier') {
+    const [val_type, val_id] = second
+    if (val_type !== 'FUNCTION')
+      throw new Error(
+        'STDOUT/STDERR statements only accept function interpolations, not values.'
+      )
+
+    // @ts-ignore
+    await interps[val_id](capture)
+  } else if (tag === 'variable_name') {
+    captures[second[0] as string] = capture
+  } else {
+    throw new Error(
+      'STDOUT/STDERR statements expect a variable name or an interpolation function.'
+    )
+  }
+  return last_cmd
+}
+
 export const execute = async (
   interps: ShellacInterpolations[],
   chunk: ParseResult,
@@ -65,60 +148,15 @@ export const execute = async (
     } else if (chunk.tag === 'if_statement') {
       return IfStatement(chunk, interps, last_cmd, cwd, captures)
     } else if (chunk.tag === 'in_statement') {
-      const [[val_type, val_id], in_clause] = chunk
-      if (val_type !== 'VALUE')
-        throw new Error(
-          'IN statements only accept value interpolations, not functions.'
-        )
-
-      // @ts-ignore
-      const new_cwd = interps[val_id]
-      if (!new_cwd || typeof new_cwd !== 'string')
-        throw new Error(
-          `IN statements need a string value to set as the current working dir`
-        )
-
-      return execute(interps, in_clause, last_cmd, new_cwd, captures)
+      return InStatement(chunk, interps, last_cmd, captures)
     } else if (chunk.tag === 'grammar') {
-      let new_last_cmd = last_cmd
-      for (const sub of chunk) {
-        new_last_cmd = await execute(interps, sub, new_last_cmd, cwd, captures)
-      }
-      return new_last_cmd
+      return await Grammar(last_cmd, chunk, interps, cwd, captures)
     } else if (chunk.tag === 'await_statement') {
-      const [[val_type, val_id]] = chunk
-      if (val_type !== 'FUNCTION')
-        throw new Error(
-          'IN statements only accept function interpolations, not values.'
-        )
-
-      // @ts-ignore
-      await interps[val_id]()
+      return await Await(chunk, interps, last_cmd)
     } else if (chunk.tag === 'stdout_statement') {
-      const [out_or_err, second] = chunk
-      if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
-        throw new Error(
-          `Expected only 'stdout' or 'stderr', got: ${out_or_err}`
-        )
-      const capture = last_cmd?.[out_or_err] || ''
-      // @ts-ignore
-      const tag: string = second.tag
-      if (tag === 'identifier') {
-        const [val_type, val_id] = second
-        if (val_type !== 'FUNCTION')
-          throw new Error(
-            'STDOUT/STDERR statements only accept function interpolations, not values.'
-          )
-
-        // @ts-ignore
-        await interps[val_id](capture)
-      } else if (tag === 'variable_name') {
-        captures[second[0] as string] = capture
-      } else {
-        throw new Error(
-          'STDOUT/STDERR statements expect a variable name or an interpolation function.'
-        )
-      }
+      return await Stdout(chunk, last_cmd, interps, captures)
+    } else {
+      return last_cmd
     }
   }
 
