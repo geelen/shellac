@@ -1,10 +1,55 @@
 import {
   Captures,
   ExecResult,
+  ParsedToken,
   ParseResult,
   ShellacInterpolations,
 } from './types'
 import execa from 'execa'
+
+function IfStatement(
+  chunk: ParsedToken,
+  interps: ShellacInterpolations[],
+  last_cmd: ExecResult,
+  cwd: string,
+  captures: Captures
+) {
+  const [[val_type, val_id], if_clause, else_clause] = chunk
+  // console.log({val_type, val_id, if_clause, else_clause})
+  if (val_type !== 'VALUE')
+    throw new Error(
+      'If statements only accept value interpolations, not functions.'
+    )
+
+  // @ts-ignore
+  if (interps[val_id]) {
+    // console.log("IF STATEMENT IS TRUE")
+    return execute(interps, if_clause, last_cmd, cwd, captures)
+  } else if (else_clause) {
+    // console.log("IF STATEMENT IS FALSE")
+    return execute(interps, else_clause, last_cmd, cwd, captures)
+  } else {
+    return last_cmd
+  }
+}
+
+function Command(
+  chunk: ParsedToken,
+  interps: ShellacInterpolations[],
+  cwd: string
+) {
+  const [str] = chunk as string[]
+  // @ts-ignore
+  const command = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
+  if (chunk.tag === 'logged_command') {
+    const promise = execa.command(command, { shell: true, cwd })
+    promise.stdout!.pipe(process.stdout)
+    promise.stderr!.pipe(process.stderr)
+    return promise
+  } else {
+    return execa.command(command, { shell: true, cwd })
+  }
+}
 
 export const execute = async (
   interps: ShellacInterpolations[],
@@ -16,33 +61,9 @@ export const execute = async (
   // console.log({ chunk })
   if (Array.isArray(chunk)) {
     if (chunk.tag === 'command_line' || chunk.tag === 'logged_command') {
-      const [str] = chunk as string[]
-      // @ts-ignore
-      const command = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
-      if (chunk.tag === 'logged_command') {
-        const promise = execa.command(command, { shell: true, cwd })
-        promise.stdout!.pipe(process.stdout)
-        promise.stderr!.pipe(process.stderr)
-        return promise
-      } else {
-        return execa.command(command, { shell: true, cwd })
-      }
+      return Command(chunk, interps, cwd)
     } else if (chunk.tag === 'if_statement') {
-      const [[val_type, val_id], if_clause, else_clause] = chunk
-      // console.log({val_type, val_id, if_clause, else_clause})
-      if (val_type !== 'VALUE')
-        throw new Error(
-          'If statements only accept value interpolations, not functions.'
-        )
-
-      // @ts-ignore
-      if (interps[val_id]) {
-        // console.log("IF STATEMENT IS TRUE")
-        return execute(interps, if_clause, last_cmd, cwd, captures)
-      } else if (else_clause) {
-        // console.log("IF STATEMENT IS FALSE")
-        return execute(interps, else_clause, last_cmd, cwd, captures)
-      }
+      return IfStatement(chunk, interps, last_cmd, cwd, captures)
     } else if (chunk.tag === 'in_statement') {
       const [[val_type, val_id], in_clause] = chunk
       if (val_type !== 'VALUE')
@@ -101,5 +122,5 @@ export const execute = async (
     }
   }
 
-  return last_cmd
+  return null
 }

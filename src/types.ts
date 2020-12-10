@@ -14,7 +14,8 @@ export type ShellacReturnVal = {
   stderr: string
   [key: string]: string
 }
-export type ParseResult = string | (Array<ParseResult> & { tag: string })
+export type ParsedToken = (Array<ParseResult> & { tag: string })
+export type ParseResult = string | ParsedToken
 export type Parser = (str: string) => undefined | ParseResult
 export type ExecResult = ExecaSyncReturnValue | null
 export type Captures = { [key: string]: string }
