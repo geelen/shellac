@@ -1,16 +1,9 @@
-import {
-  Captures,
-  ExecResult,
-  ParsedToken,
-  ParseResult,
-  ExecutionContext,
-  ShellacInterpolations,
-} from './types'
+import { ExecResult, ParsedToken, ParseResult, ExecutionContext } from './types'
 
 import execa from 'execa'
 
 function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, last_cmd, cwd, captures } = context
+  const { interps, last_cmd } = context
   const [[val_type, val_id], if_clause, else_clause] = chunk
   // console.log({val_type, val_id, if_clause, else_clause})
   if (val_type !== 'VALUE')
@@ -31,7 +24,7 @@ function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 function Command(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, last_cmd, cwd, captures } = context
+  const { interps, cwd } = context
   const [str] = chunk as string[]
   // @ts-ignore
   const command = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
@@ -46,7 +39,7 @@ function Command(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 function InStatement(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, last_cmd, cwd, captures } = context
+  const { interps } = context
   const [[val_type, val_id], in_clause] = chunk
   if (val_type !== 'VALUE')
     throw new Error(
@@ -66,7 +59,7 @@ function InStatement(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 async function Grammar(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, last_cmd, cwd, captures } = context
+  const { last_cmd } = context
   let new_last_cmd = last_cmd
   for (const sub of chunk) {
     new_last_cmd = await execute(sub, {
@@ -78,7 +71,7 @@ async function Grammar(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 async function Await(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, last_cmd, cwd, captures } = context
+  const { interps, last_cmd } = context
   const [[val_type, val_id]] = chunk
   if (val_type !== 'FUNCTION')
     throw new Error(
@@ -91,7 +84,7 @@ async function Await(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 async function Stdout(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, last_cmd, cwd, captures } = context
+  const { interps, last_cmd, captures } = context
   const [out_or_err, second] = chunk
   if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
     throw new Error(`Expected only 'stdout' or 'stderr', got: ${out_or_err}`)
