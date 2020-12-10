@@ -1,6 +1,6 @@
 import Shell from './shell'
-import {Interactive} from './types'
-import {trimFinalNewline} from "./utils";
+import { Interactive } from './types'
+import { trimFinalNewline } from './utils'
 
 enum RUNNING_STATE {
   INIT,
@@ -43,6 +43,7 @@ export default class Command {
     this.interactive = interactive
 
     this.exec = `cd ${cwd};\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
+    console.log(this.exec)
 
     this.shell.getStdout().on('data', this.handleStdoutData)
     this.shell.getStderr().on('data', this.handleStderrData)
@@ -64,7 +65,7 @@ export default class Command {
       if (match) {
         this.retCode = parseInt(match[1])
 
-        this.finish()
+        setImmediate(this.finish)
         return
       } else {
         console.log(this.stdout)
@@ -89,7 +90,7 @@ export default class Command {
     this.shell.getStdin().write(`${data}\n`)
   }
 
-  run() {
+  run = () => {
     let promiseResolve, promiseReject
 
     const promise = new Promise((resolve, reject) => {
@@ -119,7 +120,7 @@ export default class Command {
     return promise.then(() => this)
   }
 
-  finish() {
+  finish = () => {
     this.runningState = RUNNING_STATE.END
 
     clearTimeout(this.timer!)
