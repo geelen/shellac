@@ -39,7 +39,6 @@ export default class Shell {
   }
 
   getStderr() {
-    console.log("GETTING STDERR")
     return this.process.stderr
   }
 

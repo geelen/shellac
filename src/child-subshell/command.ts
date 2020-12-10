@@ -43,7 +43,6 @@ export default class Command {
     this.interactive = interactive
 
     this.exec = `cd ${cwd};\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
-    console.log(this.exec)
 
     this.shell.getStdout().on('data', this.handleStdoutData)
     this.shell.getStderr().on('data', this.handleStderrData)
@@ -55,7 +54,6 @@ export default class Command {
   }
 
   handleStdoutData = (data: string) => {
-    console.log({ handleStdoutData: data })
     const lines = trimFinalNewline(data).split(/\r?\n/)
 
     for (let i = 0; i < lines.length; i++) {
@@ -68,9 +66,7 @@ export default class Command {
         setImmediate(this.finish)
         return
       } else {
-        console.log(this.stdout)
-        console.log({ line })
-        if (this.pipe_logs) process.stdout.write(line)
+        if (this.pipe_logs) process.stdout.write(line + '\n')
         this.stdout += line + '\n'
       }
 
@@ -81,7 +77,6 @@ export default class Command {
   }
 
   handleStderrData = (data: string) => {
-    console.log({ handleStderrData: data })
     if (this.pipe_logs) process.stderr.write(data)
     this.stderr += data
   }
