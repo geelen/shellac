@@ -5,7 +5,9 @@ import {
   ParseResult,
   ShellacInterpolations,
 } from './types'
-import execa from 'execa'
+
+// @ts-ignore
+import subshell from 'child-subshell'
 
 function IfStatement(
   chunk: ParsedToken,

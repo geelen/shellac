@@ -44,6 +44,7 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   // console.log(parsed)
   const captures: Captures = {}
 
+
   const last_cmd = await execute(interps, parsed, null, cwd, captures)
 
   return {
