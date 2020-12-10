@@ -1,4 +1,5 @@
-import { parser, ParseResult, log_parse_result } from '../src'
+import { parser, log_parse_result } from '../src'
+import {ParseResult} from "../src/types";
 
 
 declare global {

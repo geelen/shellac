@@ -208,7 +208,9 @@ describe('getting started', () => {
       $ git init
       $ echo "SOME CONTENTS" >> some.file
       $ git add .
-      $ GIT_COMMITTER_NAME=test GIT_COMMITTER_EMAIL=test@test.com git commit -m 'rando' --author "Calrissian <>"
+      $ git config user.email "test@test.com"
+      $ git config user.name "Test"
+      $ git commit -m 'auto commit'
       
       $ git rev-parse --abbrev-ref HEAD
       stdout >> default_branch
