@@ -11,6 +11,7 @@ enum RUNNING_STATE {
 export default class Command {
   private shell: Shell
   private readonly cmd: string
+  private readonly cwd: string;
   private readonly interactive: Interactive | undefined
   private readonly exec: string
   private runningState: RUNNING_STATE
@@ -40,6 +41,7 @@ export default class Command {
   }) {
     this.shell = shell
     this.cmd = cmd
+    this.cwd = cwd
     this.interactive = interactive
 
     this.exec = `cd ${cwd};\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
@@ -112,7 +114,13 @@ export default class Command {
       }
     }, 86400000)
 
-    return promise.then(() => this)
+    return promise.then(() => this, (e) => {
+      process.stdout.write(`\n\nSHELLAC COMMAND FAILED!\nExecuting: ${this.cmd} in ${this.cwd}\n\nSTDOUT:\n\n`)
+      process.stdout.write(`${this.stdout}\n\n`)
+      process.stdout.write(`STDERR:\n\n${this.stderr}\n\n`)
+      this.shell.exit()
+      throw e
+    })
   }
 
   finish = () => {
