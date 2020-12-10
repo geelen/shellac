@@ -1,5 +1,6 @@
 import Shell from './shell'
-import { Interactive, Logger } from './types'
+import {Interactive} from './types'
+import {trimFinalNewline} from "./utils";
 
 enum RUNNING_STATE {
   INIT,
@@ -54,7 +55,7 @@ export default class Command {
 
   handleStdoutData = (data: string) => {
     console.log({ handleStdoutData: data })
-    const lines = data.split(/\r?\n/)
+    const lines = trimFinalNewline(data).split(/\r?\n/)
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
@@ -66,7 +67,10 @@ export default class Command {
         this.finish()
         return
       } else {
-        this.stdout += line
+        console.log(this.stdout)
+        console.log({ line })
+        if (this.pipe_logs) process.stdout.write(line)
+        this.stdout += line + '\n'
       }
 
       if (this.interactive) {
@@ -77,6 +81,7 @@ export default class Command {
 
   handleStderrData = (data: string) => {
     console.log({ handleStderrData: data })
+    if (this.pipe_logs) process.stderr.write(data)
     this.stderr += data
   }
 

@@ -139,7 +139,7 @@ describe('getting started', () => {
       }}
       $ ls
     `
-    expect(pwd2).toBe('a.file\ngenerated.by.js')
+    expect(pwd2).toBe('a.file\tgenerated.by.js')
   })
 
   it('should emit stdout blocks', async () => {

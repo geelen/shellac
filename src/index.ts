@@ -4,6 +4,7 @@ import _parser from '../lib/parser'
 import { Captures, Parser, ParseResult, ShellacImpl } from './types'
 import { execute } from './execute'
 import Shell from "./child-subshell/shell";
+import {trimFinalNewline} from "./child-subshell/utils";
 
 export const parser = (str: string) => (_parser as Parser)(str.trim())
 
@@ -56,8 +57,8 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   shell.exit()
 
   return {
-    stdout: last_cmd?.stdout || '',
-    stderr: last_cmd?.stderr || '',
+    stdout: trimFinalNewline(last_cmd?.stdout || ''),
+    stderr: trimFinalNewline(last_cmd?.stderr || ''),
     ...captures,
   }
 }

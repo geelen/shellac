@@ -1,5 +1,6 @@
 import { ExecResult, ParsedToken, ParseResult, ExecutionContext } from './types'
 import ShellCommand from './child-subshell/command'
+import {trimFinalNewline} from "./child-subshell/utils";
 
 function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
   const { interps, last_cmd } = context
@@ -86,7 +87,8 @@ async function Stdout(chunk: ParsedToken, context: ExecutionContext) {
   const [out_or_err, second] = chunk
   if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
     throw new Error(`Expected only 'stdout' or 'stderr', got: ${out_or_err}`)
-  const capture = last_cmd?.[out_or_err] || ''
+  console.log({last_cmd})
+  const capture = trimFinalNewline(last_cmd?.[out_or_err] || '')
   // @ts-ignore
   const tag: string = second.tag
   if (tag === 'identifier') {
