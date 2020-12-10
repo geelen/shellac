@@ -28,8 +28,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "child-subshell": "^1.0.3",
-    "execa": "^4.1.0",
     "reghex": "^1.0.2"
   },
   "devDependencies": {
