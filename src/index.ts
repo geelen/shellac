@@ -3,6 +3,7 @@
 import _parser from '../lib/parser'
 import { Captures, Parser, ParseResult, ShellacImpl } from './types'
 import { execute } from './execute'
+import { shell } from './child-subshell/wrapper'
 
 export const parser = (str: string) => (_parser as Parser)(str.trim())
 
@@ -44,8 +45,12 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   // console.log(parsed)
   const captures: Captures = {}
 
-
-  const last_cmd = await execute(interps, parsed, null, cwd, captures)
+  const last_cmd = await execute(parsed, {
+    interps,
+    last_cmd: null,
+    cwd,
+    captures,
+  })
 
   return {
     stdout: last_cmd?.stdout || '',

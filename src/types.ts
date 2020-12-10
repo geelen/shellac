@@ -1,4 +1,4 @@
-import {ExecaSyncReturnValue} from "execa";
+import { ExecaSyncReturnValue } from 'execa'
 
 export type ShellacInterpolations =
   | string
@@ -14,7 +14,7 @@ export type ShellacReturnVal = {
   stderr: string
   [key: string]: string
 }
-export type ParsedToken = (Array<ParseResult> & { tag: string })
+export type ParsedToken = Array<ParseResult> & { tag: string }
 export type ParseResult = string | ParsedToken
 export type Parser = (str: string) => undefined | ParseResult
 export type ExecResult = ExecaSyncReturnValue | null
@@ -23,3 +23,10 @@ export type ShellacImpl = (
   s: TemplateStringsArray,
   ...interps: ShellacInterpolations[]
 ) => Promise<ShellacReturnVal>
+
+export type ExecutionContext = {
+  interps: ShellacInterpolations[]
+  last_cmd: ExecResult
+  cwd: string
+  captures: Captures
+}
