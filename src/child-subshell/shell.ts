@@ -1,15 +1,19 @@
 import child_process, {ChildProcessWithoutNullStreams} from 'child_process'
-import {Logger} from "./types";
+import {Logger} from './types'
 
 export default class Shell {
   private process: ChildProcessWithoutNullStreams
-  private logger: Logger;
+  private logger: Logger
 
-  constructor() {
+  constructor(env_passthrough: string[] = ['PATH']) {
+    const env: typeof process.env = { PS1: '' }
+
+    env_passthrough.forEach((key) => {
+      env[key] = process.env[key]
+    })
+
     this.process = child_process.spawn('bash', ['--noprofile', '--norc'], {
-      env: {
-        'PS1': ''
-      }
+      env
     })
 
     this.process.stdout.setEncoding('utf8')
