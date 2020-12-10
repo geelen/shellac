@@ -1,6 +1,5 @@
 import { ExecResult, ParsedToken, ParseResult, ExecutionContext } from './types'
-
-import execa from 'execa'
+import ShellCommand from './child-subshell/command'
 
 function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
   const { interps, last_cmd } = context
@@ -24,18 +23,17 @@ function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 function Command(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, cwd } = context
+  const { interps, cwd, shell } = context
   const [str] = chunk as string[]
   // @ts-ignore
-  const command = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
-  if (chunk.tag === 'logged_command') {
-    const promise = execa.command(command, { shell: true, cwd })
-    promise.stdout!.pipe(process.stdout)
-    promise.stderr!.pipe(process.stderr)
-    return promise
-  } else {
-    return execa.command(command, { shell: true, cwd })
-  }
+  const cmd = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
+  const command = new ShellCommand({
+    cwd,
+    shell,
+    cmd,
+    pipe_logs: chunk.tag === 'logged_command'
+  })
+  return command.run()
 }
 
 function InStatement(chunk: ParsedToken, context: ExecutionContext) {

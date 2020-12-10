@@ -1,4 +1,6 @@
 import { ExecaSyncReturnValue } from 'execa'
+import Shell from "./child-subshell/shell";
+import Command from "./child-subshell/command";
 
 export type ShellacInterpolations =
   | string
@@ -17,7 +19,7 @@ export type ShellacReturnVal = {
 export type ParsedToken = Array<ParseResult> & { tag: string }
 export type ParseResult = string | ParsedToken
 export type Parser = (str: string) => undefined | ParseResult
-export type ExecResult = ExecaSyncReturnValue | null
+export type ExecResult = Command | null
 export type Captures = { [key: string]: string }
 export type ShellacImpl = (
   s: TemplateStringsArray,
@@ -28,5 +30,6 @@ export type ExecutionContext = {
   interps: ShellacInterpolations[]
   last_cmd: ExecResult
   cwd: string
-  captures: Captures
+  captures: Captures,
+  shell: Shell
 }

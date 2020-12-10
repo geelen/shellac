@@ -3,7 +3,7 @@
 import _parser from '../lib/parser'
 import { Captures, Parser, ParseResult, ShellacImpl } from './types'
 import { execute } from './execute'
-import { shell } from './child-subshell/wrapper'
+import Shell from "./child-subshell/shell";
 
 export const parser = (str: string) => (_parser as Parser)(str.trim())
 
@@ -42,15 +42,18 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   const parsed = parser(str)
   if (!parsed || typeof parsed === 'string') throw new Error('Parsing error!')
 
-  // console.log(parsed)
   const captures: Captures = {}
+
+  const shell = new Shell()
 
   const last_cmd = await execute(parsed, {
     interps,
     last_cmd: null,
     cwd,
     captures,
+    shell
   })
+  shell.exit()
 
   return {
     stdout: last_cmd?.stdout || '',

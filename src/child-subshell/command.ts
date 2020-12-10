@@ -12,51 +12,48 @@ export default class Command {
   private readonly cmd: string
   private readonly interactive: Interactive | undefined
   private readonly exec: string
-  private readonly handleStdoutDataBind: OmitThisParameter<
-    (data: string) => void
-  >
-  private readonly handleStderrDataBind: OmitThisParameter<
-    (data: string) => void
-  >
   private runningState: RUNNING_STATE
-  private logger: Logger
+  private pipe_logs: boolean
 
   private retCode?: number
-  private promiseResolve?: any;
-  private promiseReject?: any;
-  private promise?: Promise<unknown>;
-  private timer?: NodeJS.Timeout;
+  private promiseResolve?: any
+  private promiseReject?: any
+  private promise?: Promise<unknown>
+  private timer?: NodeJS.Timeout
+
+  stdout: string
+  stderr: string
 
   constructor({
+    cwd,
     shell,
     cmd,
     interactive,
+    pipe_logs = false,
   }: {
+    cwd: string
     shell: Shell
     cmd: string
     interactive?: Interactive
+    pipe_logs: boolean
   }) {
     this.shell = shell
     this.cmd = cmd
     this.interactive = interactive
 
-    this.exec = `${this.cmd}`
-    this.exec += ';echo __END_OF_COMMAND_[$?]__\n'
+    this.exec = `cd ${cwd};\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
 
-    this.handleStdoutDataBind = this.handleStdoutData.bind(this)
-    this.shell.getStdout().on('data', this.handleStdoutDataBind)
-
-    this.handleStderrDataBind = this.handleStderrData.bind(this)
-    this.shell.getStderr().on('data', this.handleStderrDataBind)
-
+    this.shell.getStdout().on('data', this.handleStdoutData)
+    this.shell.getStderr().on('data', this.handleStderrData)
     this.runningState = RUNNING_STATE.INIT
 
-    this.logger = shell.getLogger()
-
-    return this
+    this.pipe_logs = pipe_logs
+    this.stdout = ''
+    this.stderr = ''
   }
 
-  handleStdoutData(data: string) {
+  handleStdoutData = (data: string) => {
+    console.log({ handleStdoutData: data })
     const lines = data.split(/\r?\n/)
 
     for (let i = 0; i < lines.length; i++) {
@@ -69,20 +66,21 @@ export default class Command {
         this.finish()
         return
       } else {
-        this.logger(line)
+        this.stdout += line
       }
 
       if (this.interactive) {
-        this.interactive(line, this.handleStdinData.bind(this))
+        this.interactive(line, this.handleStdinData)
       }
     }
   }
 
-  handleStderrData(data: string) {
-    this.logger(data)
+  handleStderrData = (data: string) => {
+    console.log({ handleStderrData: data })
+    this.stderr += data
   }
 
-  handleStdinData(data: string) {
+  handleStdinData = (data: string) => {
     this.shell.getStdin().write(`${data}\n`)
   }
 
@@ -113,7 +111,7 @@ export default class Command {
       }
     }, 86400000)
 
-    return promise
+    return promise.then(() => this)
   }
 
   finish() {
@@ -121,8 +119,8 @@ export default class Command {
 
     clearTimeout(this.timer!)
 
-    this.shell.getStdout().removeListener('data', this.handleStdoutDataBind)
-    this.shell.getStderr().removeListener('data', this.handleStderrDataBind)
+    this.shell.getStdout().removeListener('data', this.handleStdoutData)
+    this.shell.getStderr().removeListener('data', this.handleStderrData)
 
     const obj = {
       retCode: this.retCode,

@@ -6,15 +6,19 @@ export default class Shell {
   private logger: Logger;
 
   constructor() {
-    this.process = child_process.spawn('unbuffer', ['-p', '/bin/bash'], {})
+    this.process = child_process.spawn('unbuffer', ['-p', '/bin/bash', '--noprofile', '--norc'], {
+      env: {
+        'PS1': ''
+      }
+    })
 
     this.process.stdout.setEncoding('utf8')
     // @ts-ignore
     this.process.stdin.resume()
 
-    this.process.on('close', (code) => {
-      console.log(`child process exited with code ${code}`)
-    })
+    // this.process.on('close', (code) => {
+    //   console.log(`child process exited with code ${code}`)
+    // })
 
     this.logger = (line) => {}
   }
