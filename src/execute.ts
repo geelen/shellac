@@ -1,19 +1,9 @@
-import {
-  Captures,
-  ExecResult,
-  ParsedToken,
-  ParseResult,
-  ShellacInterpolations,
-} from './types'
-import execa from 'execa'
+import { ExecResult, ParsedToken, ParseResult, ExecutionContext } from './types'
+import ShellCommand from './child-subshell/command'
+import { trimFinalNewline } from './child-subshell/utils'
 
-function IfStatement(
-  chunk: ParsedToken,
-  interps: ShellacInterpolations[],
-  last_cmd: ExecResult,
-  cwd: string,
-  captures: Captures
-) {
+async function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
+  const { interps, last_cmd } = context
   const [[val_type, val_id], if_clause, else_clause] = chunk
   // console.log({val_type, val_id, if_clause, else_clause})
   if (val_type !== 'VALUE')
@@ -24,39 +14,42 @@ function IfStatement(
   // @ts-ignore
   if (interps[val_id]) {
     // console.log("IF STATEMENT IS TRUE")
-    return execute(interps, if_clause, last_cmd, cwd, captures)
+    return execute(if_clause, context)
   } else if (else_clause) {
     // console.log("IF STATEMENT IS FALSE")
-    return execute(interps, else_clause, last_cmd, cwd, captures)
+    return execute(else_clause, context)
   } else {
     return last_cmd
   }
 }
 
-function Command(
-  chunk: ParsedToken,
-  interps: ShellacInterpolations[],
-  cwd: string
-) {
+async function Command(chunk: ParsedToken, context: ExecutionContext) {
+  const { interps, cwd, shell } = context
   const [str] = chunk as string[]
   // @ts-ignore
-  const command = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
-  if (chunk.tag === 'logged_command') {
-    const promise = execa.command(command, { shell: true, cwd })
-    promise.stdout!.pipe(process.stdout)
-    promise.stderr!.pipe(process.stderr)
-    return promise
-  } else {
-    return execa.command(command, { shell: true, cwd })
+  const split_cmd = str.split(/#__(?:FUNCTION|VALUE)_(\d+)__#/g)
+  let cmd = ''
+  let i = 0
+  for (const token of split_cmd) {
+    if (i++ % 2 === 0) {
+      cmd += token
+    } else {
+      // @ts-ignore
+      const interp = interps[token]
+      cmd += await (typeof interp === 'function' ? interp() : interp)
+    }
   }
+  const command = new ShellCommand({
+    cwd,
+    shell,
+    cmd,
+    pipe_logs: chunk.tag === 'logged_command',
+  })
+  return command.run()
 }
 
-function InStatement(
-  chunk: Array<ParseResult> & { tag: string },
-  interps: ShellacInterpolations[],
-  last_cmd: execa.ExecaSyncReturnValue<string> | null,
-  captures: Captures
-) {
+async function InStatement(chunk: ParsedToken, context: ExecutionContext) {
+  const { interps } = context
   const [[val_type, val_id], in_clause] = chunk
   if (val_type !== 'VALUE')
     throw new Error(
@@ -69,29 +62,26 @@ function InStatement(
     throw new Error(
       `IN statements need a string value to set as the current working dir`
     )
-
-  return execute(interps, in_clause, last_cmd, new_cwd, captures)
+  return execute(in_clause, {
+    ...context,
+    cwd: new_cwd,
+  })
 }
 
-async function Grammar(
-  last_cmd: execa.ExecaSyncReturnValue<string> | null,
-  chunk: Array<ParseResult> & { tag: string },
-  interps: ShellacInterpolations[],
-  cwd: string,
-  captures: Captures
-) {
+async function Grammar(chunk: ParsedToken, context: ExecutionContext) {
+  const { last_cmd } = context
   let new_last_cmd = last_cmd
   for (const sub of chunk) {
-    new_last_cmd = await execute(interps, sub, new_last_cmd, cwd, captures)
+    new_last_cmd = await execute(sub, {
+      ...context,
+      last_cmd: new_last_cmd,
+    })
   }
   return new_last_cmd
 }
 
-async function Await(
-  chunk: Array<ParseResult> & { tag: string },
-  interps: ShellacInterpolations[],
-  last_cmd: execa.ExecaSyncReturnValue<string> | null
-) {
+async function Await(chunk: ParsedToken, context: ExecutionContext) {
+  const { interps, last_cmd } = context
   const [[val_type, val_id]] = chunk
   if (val_type !== 'FUNCTION')
     throw new Error(
@@ -103,16 +93,12 @@ async function Await(
   return last_cmd
 }
 
-async function Stdout(
-  chunk: Array<ParseResult> & { tag: string },
-  last_cmd: execa.ExecaSyncReturnValue<string> | null,
-  interps: ShellacInterpolations[],
-  captures: Captures
-) {
+async function Stdout(chunk: ParsedToken, context: ExecutionContext) {
+  const { interps, last_cmd, captures } = context
   const [out_or_err, second] = chunk
   if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
     throw new Error(`Expected only 'stdout' or 'stderr', got: ${out_or_err}`)
-  const capture = last_cmd?.[out_or_err] || ''
+  const capture = trimFinalNewline(last_cmd?.[out_or_err] || '')
   // @ts-ignore
   const tag: string = second.tag
   if (tag === 'identifier') {
@@ -135,28 +121,25 @@ async function Stdout(
 }
 
 export const execute = async (
-  interps: ShellacInterpolations[],
   chunk: ParseResult,
-  last_cmd: ExecResult,
-  cwd: string,
-  captures: Captures
+  context: ExecutionContext
 ): Promise<ExecResult> => {
   // console.log({ chunk })
   if (Array.isArray(chunk)) {
     if (chunk.tag === 'command_line' || chunk.tag === 'logged_command') {
-      return Command(chunk, interps, cwd)
+      return Command(chunk, context)
     } else if (chunk.tag === 'if_statement') {
-      return IfStatement(chunk, interps, last_cmd, cwd, captures)
+      return IfStatement(chunk, context)
     } else if (chunk.tag === 'in_statement') {
-      return InStatement(chunk, interps, last_cmd, captures)
+      return InStatement(chunk, context)
     } else if (chunk.tag === 'grammar') {
-      return await Grammar(last_cmd, chunk, interps, cwd, captures)
+      return await Grammar(chunk, context)
     } else if (chunk.tag === 'await_statement') {
-      return await Await(chunk, interps, last_cmd)
+      return await Await(chunk, context)
     } else if (chunk.tag === 'stdout_statement') {
-      return await Stdout(chunk, last_cmd, interps, captures)
+      return await Stdout(chunk, context)
     } else {
-      return last_cmd
+      return context.last_cmd
     }
   }
 

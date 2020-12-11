@@ -43,7 +43,7 @@ describe('getting started', () => {
     `
 
     expect(wc).toBe('5')
-    // expect(env_var).toBe(`boats`) //TODO
+    expect(env_var).toBe(`boats`)
   })
 
   it('should handle interpolations in commands', async () => {
@@ -52,6 +52,24 @@ describe('getting started', () => {
       $ echo ${rando}
       stdout >> ${(echo) => {
         expect(echo).toBe(rando.toString())
+      }}
+    `
+  })
+
+  it('should handle async interpolations in commands', async () => {
+    const rando1 = Math.random()
+    const rando2 = Math.random()
+    const asyncRando = async () => rando2
+
+    await shellac`
+      $ echo "RANDO 1: ${Promise.resolve(rando1)}"
+      stdout >> ${(as_promise) => {
+        expect(as_promise).toBe(`RANDO 1: ${rando1}`)
+      }}
+      
+      $ echo "RANDO 2: ${asyncRando}"
+      stdout >> ${(as_async_function) => {
+        expect(as_async_function).toBe(`RANDO 2: ${rando2}`)
       }}
     `
   })
@@ -229,9 +247,3 @@ describe('getting started', () => {
     expect(current_sha).toMatch(/^[a-f0-9]{7}$/)
   })
 })
-
-test('morty', async () => await shellac`
-  $ echo "End-to-end CLI testing made nice"
-  $ node -p "5 * 9"
-  stdout >> ${ answer => expect(Number(answer)).toBeGreaterThan(40) }
-`)

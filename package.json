@@ -1,6 +1,6 @@
 {
   "name": "shellac",
-  "version": "0.2.0",
+  "version": "0.3.2",
   "description": "Protect and beautify your shell scripting",
   "keywords": [
     "shell"
@@ -28,7 +28,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "execa": "^4.1.0",
     "reghex": "^1.0.2"
   },
   "devDependencies": {
