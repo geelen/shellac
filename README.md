@@ -1,4 +1,4 @@
-<img src="https://user-images.githubusercontent.com/23264/101933739-86774100-3bd4-11eb-9bce-e9dfb1a8ba27.png" width="120">
+<img src="https://user-images.githubusercontent.com/23264/101935969-cdb30100-3bd7-11eb-95ec-022ba9c30f07.png" width="120">
 
 # Shellac
 
