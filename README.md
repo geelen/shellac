@@ -156,10 +156,57 @@ await shellac.in(cwd)`
 `
 ```
 
+### Persistence between commands
+
+A `shellac` call invokes a single instance of `bash` for the duration, so changes you make are reflected later in the script:
+
+```js
+await shellac`
+  $ echo $LOL
+  stdout >> ${lol => expect(lol).toBe('') }
+  
+  $ LOL=boats
+  
+  $ echo $LOL
+  stdout >> ${lol => expect(lol).toBe('boats') }
+`
+```
+
+**Note:** the current working directory is _only_ configured by `shellac.in()` or the `in ${} { ... }` directive:
+
+```js
+const cwd = __dirname
+const parent_dir = path.resolve(cwd, '..')
+await shellac.in(cwd)`
+  // Normal behaviour
+  $ pwd
+  stdout >> ${pwd => expect(pwd).toBe(cwd) }
+  
+  // Has no effect on the remaining commands
+  $ cd ..
+  
+  $ pwd
+  stdout >> ${pwd => expect(pwd).toBe(cwd) }
+  
+  // If you want to change dir use in {}
+  in ${ parent_dir } {
+    $ pwd
+    stdout >> ${pwd => expect(pwd).toBe(parent_dir) }
+  }
+  
+  // Or do it on a single line
+  $ cd .. && pwd
+  stdout >> ${pwd => expect(pwd).toBe(parent_dir) }
+  
+  // Joining commands with ; also works
+  $ cd ..; pwd
+  stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
+`
+```
+
 ### Comments
 
 All these examples are valid, since `// single-line-comments` are ignored as expected.
-
 
 ## Example
 
