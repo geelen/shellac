@@ -246,4 +246,34 @@ describe('getting started', () => {
     expect(current_branch).toEqual('new-branch')
     expect(current_sha).toMatch(/^[a-f0-9]{7}$/)
   })
+
+  it('should only change dirs with in', async () => {
+    const cwd = __dirname
+    const parent_dir = path.resolve(cwd, '..')
+    await shellac.in(cwd)`
+      // Normal behaviour
+      $ pwd
+      stdout >> ${(pwd) => expect(pwd).toBe(cwd)}
+      
+      // Has no effect on the remaining commands
+      $ cd ..
+      
+      $ pwd
+      stdout >> ${(pwd) => expect(pwd).toBe(cwd)}
+      
+      // If you want to change dir use in {}
+      in ${parent_dir} {
+        $ pwd
+        stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
+      }
+      
+      // Or do it on a single line
+      $ cd .. && pwd
+      stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
+      
+      // ; also works
+      $ cd ..; pwd
+      stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
+    `
+  })
 })
