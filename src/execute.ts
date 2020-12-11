@@ -1,8 +1,8 @@
 import { ExecResult, ParsedToken, ParseResult, ExecutionContext } from './types'
 import ShellCommand from './child-subshell/command'
-import {trimFinalNewline} from "./child-subshell/utils";
+import { trimFinalNewline } from './child-subshell/utils'
 
-function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
+async function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
   const { interps, last_cmd } = context
   const [[val_type, val_id], if_clause, else_clause] = chunk
   // console.log({val_type, val_id, if_clause, else_clause})
@@ -23,21 +23,32 @@ function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
   }
 }
 
-function Command(chunk: ParsedToken, context: ExecutionContext) {
+async function Command(chunk: ParsedToken, context: ExecutionContext) {
   const { interps, cwd, shell } = context
   const [str] = chunk as string[]
   // @ts-ignore
-  const cmd = str.replace(/#__VALUE_(\d+)__#/g, (_, i) => interps[i])
+  const split_cmd = str.split(/#__(?:FUNCTION|VALUE)_(\d+)__#/g)
+  let cmd = ''
+  let i = 0
+  for (const token of split_cmd) {
+    if (i++ % 2 === 0) {
+      cmd += token
+    } else {
+      // @ts-ignore
+      const interp = interps[token]
+      cmd += await (typeof interp === 'function' ? interp() : interp)
+    }
+  }
   const command = new ShellCommand({
     cwd,
     shell,
     cmd,
-    pipe_logs: chunk.tag === 'logged_command'
+    pipe_logs: chunk.tag === 'logged_command',
   })
   return command.run()
 }
 
-function InStatement(chunk: ParsedToken, context: ExecutionContext) {
+async function InStatement(chunk: ParsedToken, context: ExecutionContext) {
   const { interps } = context
   const [[val_type, val_id], in_clause] = chunk
   if (val_type !== 'VALUE')

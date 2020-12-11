@@ -1,16 +1,21 @@
 import { ExecaSyncReturnValue } from 'execa'
-import Shell from "./child-subshell/shell";
-import Command from "./child-subshell/command";
+import Shell from './child-subshell/shell'
+import Command from './child-subshell/command'
 
-export type ShellacInterpolations =
+export type ShellacValueInterpolation =
   | string
   | boolean
   | undefined
   | number
   | null
+
+export type ShellacInterpolations =
+  | ShellacValueInterpolation
+  | Promise<ShellacValueInterpolation>
   | ((a: string) => void)
   | ((a: string) => Promise<void>)
-  | (() => Promise<void>)
+  | (() => Promise<void | ShellacValueInterpolation>)
+
 export type ShellacReturnVal = {
   stdout: string
   stderr: string
@@ -30,6 +35,6 @@ export type ExecutionContext = {
   interps: ShellacInterpolations[]
   last_cmd: ExecResult
   cwd: string
-  captures: Captures,
+  captures: Captures
   shell: Shell
 }
