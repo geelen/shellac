@@ -1,3 +1,5 @@
+<img src="https://user-images.githubusercontent.com/23264/101933739-86774100-3bd4-11eb-9bce-e9dfb1a8ba27.png" width="120">
+
 # Shellac
 
 A tool to make invoking a series of shell commands safer & better-looking.
@@ -16,31 +18,141 @@ test('morty', async () => await shellac`
 
 ## Syntax
 
-Inside a shellac block:
+### Basic commands
 
 ```js
 await shellac`
-  // commands
+  // To execute a command, use $
+  $ my command here  
+  
+  // If you want the output piped through to process.stdout/err, use $$
+  $$ echo "This command will print to terminal"
+  
+  // Use stdout/err and >> to check the output of the last command
+  stdout >> ${ last_cmd_stdout => {
+    expect(last_cmd_stdout).toBe("This command will print to terminal")
+  }}
 `
 ```
 
-`$ my command here` executes commands
+### Returning output
 
-`$$ my command here` executes and streams logs while the test runs
+Shellac returns the stdout/err of the last command in a block as `{ stdout, stderr }`
 
-`stdout >> ${ str => ... }` gives you 'str' as the output of the most recent command
+```js
+const { stdout, stderr } = await shellac`
+  $ echo "This command will run but its output will be lost"
+  $ echo "The last command executed returns its stdout/err"
+`
+expect(stdout).toBe("The last command executed returns its stdout/err")
+```
 
-`stdout >> var_name` makes the shellac command return `{ var_name: latest_stdout }` instead
+You can also return named captures from a series of commands:
 
-> Note: these work for `stderr` too
+```js
+const { current_sha, current_branch } = await shellac`
+  $ git rev-parse --short HEAD
+  stdout >> current_sha
 
-`in ${ dir } { ... }` lets you change dir for a series of commands
+  $ git rev-parse --abbrev-ref HEAD
+  stdout >> current_branch
+`
+```
 
-> Note: You can also use the alias of ``shellac.in(dir)` ... ` ``
+### Branching
 
-`await ${ async () => { ... } }` lets you pause the script while you do some dank JS
+You can use `if ${ ... } { ... } else { ... }` to run conditionally based on the value of an interpolation:
 
-`// single-line-comments` JS-style single-line comments work
+```js
+await shellac`
+  if ${ process.env.CLEAN_RUN } {
+    $ yarn create react-app
+  } else {
+    $ git reset --hard
+  }
+  
+  // etc
+`
+```
+
+### Changing directory
+
+You can either use an `in` directive:
+
+```js
+await shellac`
+  // By default we run in process.cwd()
+  $ pwd
+  stdout >> ${ cwd => expect(cwd).toBe(process.cwd()) }
+
+  // Change directory for the duration of the block:
+  in ${ __dirname } {
+    $ pwd
+    stdout >> ${ cwd => expect(cwd).toBe(__dirname) }
+  }
+  
+  // Back to process.cwd() here
+`
+```
+
+If the whole script needs to run in one place, use `shellac.in(dir)`:
+
+```js
+import tmp from 'tmp-promise'
+const dir = await tmp.dir()
+await shellac.in(dir.path)`
+  $ pwd
+  stdout >> ${ cwd => expect(cwd).toBe(dir.path) }
+`
+```
+
+### Async
+
+Use the `await` declaration to invoke & wait for some JS inline with your script. It works great when Bash doesn't quite do what you need.
+
+```js
+import fs from 'fs-extra'
+await shellac.in(cwd)`
+  await ${ async () => {
+    await fs.writeFile(
+      path.join(cwd, 'bigfile.dat'),
+      huge_data
+    )
+  }}
+  
+  $ ls -l
+  stdout >> ${(files) => expect(files).toMatch('bigfile.dat')}
+`
+```
+
+### Interpolated commands
+
+Inside a `$` command you can use string interpolation like normal:
+
+```js
+await shellac.in(cwd)`
+  $ echo "${JSON.stringify({ current_sha, current_branch })}" > git_info.json
+`
+```
+
+These can even be promises or async functions:
+
+```js
+const getAllPackageNames = async () => { /* ... */ }
+await shellac.in(cwd)`
+  // You can pass a promise and it will be awaited
+  $ yarn link ${ getAllPackageNames() }
+  
+  // ...
+  
+  // Or pass an async function and shellac will call and await it
+  $ yarn unlink ${ async () => getAllPackageNames() }
+`
+```
+
+### Comments
+
+All these examples are valid, since `// single-line-comments` are ignored as expected.
 
 
 ## Example
