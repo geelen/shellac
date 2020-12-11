@@ -21,7 +21,7 @@ export default class Command {
   private promiseResolve?: any
   private promiseReject?: any
   private promise?: Promise<unknown>
-  private timer?: NodeJS.Timeout
+  private timer?: ReturnType<typeof setTimeout>
 
   stdout: string
   stderr: string
