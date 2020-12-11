@@ -69,9 +69,11 @@ await shellac`
     $ yarn create react-app
   } else {
     $ git reset --hard
+    $ git clean -df
   }
   
-  // etc
+  $$ npx fab init -y
+  // ...
 `
 ```
 
@@ -81,17 +83,15 @@ You can either use an `in` directive:
 
 ```js
 await shellac`
-  // By default we run in process.cwd()
-  $ pwd
-  stdout >> ${ cwd => expect(cwd).toBe(process.cwd()) }
-
   // Change directory for the duration of the block:
   in ${ __dirname } {
     $ pwd
     stdout >> ${ cwd => expect(cwd).toBe(__dirname) }
   }
   
-  // Back to process.cwd() here
+  // By default we run in process.cwd()
+  $ pwd
+  stdout >> ${ cwd => expect(cwd).toBe(process.cwd()) }
 `
 ```
 
@@ -100,6 +100,7 @@ If the whole script needs to run in one place, use `shellac.in(dir)`:
 ```js
 import tmp from 'tmp-promise'
 const dir = await tmp.dir()
+
 await shellac.in(dir.path)`
   $ pwd
   stdout >> ${ cwd => expect(cwd).toBe(dir.path) }
@@ -112,6 +113,7 @@ Use the `await` declaration to invoke & wait for some JS inline with your script
 
 ```js
 import fs from 'fs-extra'
+
 await shellac.in(cwd)`
   await ${ async () => {
     await fs.writeFile(
