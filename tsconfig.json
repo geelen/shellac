@@ -2,7 +2,7 @@
   "compilerOptions": {
     /* Basic Options */
     // "incremental": true,                   /* Enable incremental compilation */
-    "target": "es2020",
+    "target": "es2019",
     "module": "commonjs",
     "lib": ["es2020", "dom"],
     "declaration": true,
