@@ -4,6 +4,10 @@
 
 A tool to make invoking a series of shell commands safer & better-looking.
 
+[![npm](https://img.shields.io/npm/v/shellac?label=%F0%9F%93%A6%20npm)](https://www.npmjs.com/package/shellac)
+[![GitHub last commit](https://img.shields.io/github/last-commit/geelen/shellac?label=%E2%9C%8F%EF%B8%8F%20last%20commit)](https://github.com/geelen/shellac)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/geelen/shellac/Node.js%20CI)](https://github.com/geelen/shellac/actions)
+
 ## Usage
 
 ```js
