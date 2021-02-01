@@ -2,6 +2,7 @@ import shellac from '../src'
 import * as tmp from 'tmp-promise'
 import fs from 'fs-extra'
 import path from 'path'
+import Shell from '../src/child-subshell/shell'
 
 describe('getting started', () => {
   it('should run a simple command', async () => {
@@ -275,5 +276,46 @@ describe('getting started', () => {
       $ cd ..; pwd
       stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
     `
+  })
+
+  it('should accept exits blocks', async () => {
+    await shellac`
+      exits {
+        $ node -e 'process.stderr.write("this gon fail"); process.exit(2)'
+      }
+      exitcode >> ${(exitcode) => expect(exitcode).toBe(2)}
+      stderr >> ${(stderr) => expect(stderr).toBe('this gon fail')}
+    `
+  })
+
+  describe('failure tests', () => {
+    let logs: string[]
+    let _logger: typeof Shell.logger
+
+    beforeEach(() => {
+      logs = []
+      _logger = Shell.logger
+      Shell.logger = (...args) => logs.push(...args)
+    })
+
+    afterEach(() => {
+      expect(logs.join('\n')).toContain('SHELLAC COMMAND FAILED')
+      Shell.logger = _logger
+    })
+
+    it('should assert exit codes', async () => {
+      await expect(shellac`
+        exits(2) {
+          $ echo "this gon fail" >&2; false
+        }
+      `).rejects.toEqual(expect.objectContaining({ retCode: 1 }))
+    })
+
+    it('should demand exits blocks for failing commands', async () => {
+      // originally, if the command was the last in the block it wouldn't fail
+      await expect(shellac`
+        $ false
+      `).rejects.toEqual(expect.objectContaining({ retCode: 1 }))
+    })
   })
 })

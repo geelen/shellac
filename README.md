@@ -204,6 +204,35 @@ await shellac.in(cwd)`
 `
 ```
 
+### Non-zero exit codes
+
+Just wrap your command in an `exits` block if something is going to return a non-zero error:
+
+```js
+await shellac`
+  $ touch a.file
+  $ rm a.file
+  
+  exits {
+    $ rm a.file
+  }
+  exitcode >> ${ code => expect(code).toBe(1) }
+  stderr >> ${ stderr => expect(stderr).toContain('No such file or directory') }
+`
+```
+
+Since verifying an exitcode is so common, you can use an `exits(code)` block instead:
+
+```js
+await shellac`
+  exits(2) {
+    $ node -e "process.exit(2)"
+  }
+`
+```
+
+Note: an `exits` block can have multiple lines but _every line_ is asserted to return the specified exit code.
+
 ### Comments
 
 All these examples are valid, since `// single-line-comments` are ignored as expected.

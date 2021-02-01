@@ -52,7 +52,8 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
     last_cmd: null,
     cwd,
     captures,
-    shell
+    shell,
+    exit_expected: false,
   })
   shell.exit()
 
@@ -64,7 +65,7 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
 }
 
 const shellac = Object.assign(_shellac(process.cwd()), {
-  in: (cwd: string) => _shellac(cwd),
+  in: (cwd: string) => _shellac(cwd)
 })
 
 export default shellac

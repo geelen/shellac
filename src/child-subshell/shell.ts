@@ -1,9 +1,10 @@
-import child_process, {ChildProcessWithoutNullStreams} from 'child_process'
-import {Logger} from './types'
+import child_process, { ChildProcessWithoutNullStreams } from 'child_process'
+import { Logger } from './types'
 
 export default class Shell {
   private process: ChildProcessWithoutNullStreams
-  private logger: Logger
+  static logger: Logger = (...args: any[]) =>
+    process.stdout.write(args.map((a) => a.toString()).join('\n'))
 
   constructor(env_passthrough: string[] = ['PATH']) {
     const env: typeof process.env = { PS1: '' }
@@ -13,25 +14,11 @@ export default class Shell {
     })
 
     this.process = child_process.spawn('bash', ['--noprofile', '--norc'], {
-      env
+      env,
     })
 
     this.process.stdout.setEncoding('utf8')
     // this.process.stdin.resume()
-
-    // this.process.on('close', (code) => {
-    //   console.log(`child process exited with code ${code}`)
-    // })
-
-    this.logger = (line) => {}
-  }
-
-  setLogger(logger: Logger) {
-    this.logger = logger
-  }
-
-  getLogger() {
-    return this.logger
   }
 
   getStdin() {

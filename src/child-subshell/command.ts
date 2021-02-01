@@ -1,5 +1,5 @@
 import Shell from './shell'
-import { Interactive } from './types'
+import {ExitExpected, Interactive} from './types'
 import { trimFinalNewline } from './utils'
 
 enum RUNNING_STATE {
@@ -11,13 +11,14 @@ enum RUNNING_STATE {
 export default class Command {
   private shell: Shell
   private readonly cmd: string
-  private readonly cwd: string;
+  private readonly cwd: string
   private readonly interactive: Interactive | undefined
   private readonly exec: string
   private runningState: RUNNING_STATE
   private pipe_logs: boolean
+  private exit_expected: ExitExpected
 
-  private retCode?: number
+  retCode?: number
   private promiseResolve?: any
   private promiseReject?: any
   private promise?: Promise<unknown>
@@ -32,17 +33,20 @@ export default class Command {
     cmd,
     interactive,
     pipe_logs = false,
+    exit_expected = false,
   }: {
     cwd: string
     shell: Shell
     cmd: string
     interactive?: Interactive
-    pipe_logs: boolean
+    pipe_logs: boolean,
+    exit_expected: ExitExpected
   }) {
     this.shell = shell
     this.cmd = cmd
     this.cwd = cwd
     this.interactive = interactive
+    this.exit_expected = exit_expected;
 
     this.exec = `cd ${cwd};\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
 
@@ -114,13 +118,18 @@ export default class Command {
       }
     }, 86400000)
 
-    return promise.then(() => this, (e) => {
-      process.stdout.write(`\n\nSHELLAC COMMAND FAILED!\nExecuting: ${this.cmd} in ${this.cwd}\n\nSTDOUT:\n\n`)
-      process.stdout.write(`${this.stdout}\n\n`)
-      process.stdout.write(`STDERR:\n\n${this.stderr}\n\n`)
-      this.shell.exit()
-      throw e
-    })
+    return promise.then(
+      () => this,
+      (e) => {
+        this.log(
+          `\n\nSHELLAC COMMAND FAILED!\nExecuting: ${this.cmd} in ${this.cwd}\n\nSTDOUT:\n\n`
+        )
+        this.log(`${this.stdout}\n\n`)
+        this.log(`STDERR:\n\n${this.stderr}\n\n`)
+        this.shell.exit()
+        throw e
+      }
+    )
   }
 
   finish = () => {
@@ -136,10 +145,26 @@ export default class Command {
       cmd: this.cmd,
     }
 
-    if (this.retCode) {
-      return this.promiseReject(obj)
+    const matching_exit_code = this.retCode === this.exit_expected
+    if (!matching_exit_code) {
+      if (this.exit_expected === true) {
+        if (this.retCode === 0) {
+          this.log('NO EXIT WHEN EXPECTED')
+          return this.promiseReject(obj)
+        }
+      } else if (this.exit_expected === false) {
+        if (this.retCode !== 0) {
+          this.log('EXIT WHEN NOT EXPECTED')
+          return this.promiseReject(obj)
+        }
+      } else {
+        this.log(`EXIT CODE DIDN'T MATCH`)
+        return this.promiseReject(obj)
+      }
     }
 
     return this.promiseResolve(obj)
   }
+
+  log = Shell.logger
 }

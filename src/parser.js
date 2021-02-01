@@ -22,6 +22,10 @@ const identifier = match('identifier')`
   (?:${/#__/}) ${/VALUE|FUNCTION/} (?: ${/_/}) ${/\d+/} (?:${/__#/})
 `
 
+const integer_argument = match('integer_argument')`
+  (?: ${/\(/}) ${/\d+/} (?: ${/\)/})
+`
+
 const variable_name = match('variable_name')`
   ${/\S+/}
 `
@@ -63,6 +67,23 @@ const stdout_statement = match('stdout_statement')`
   (?: ${ignored}?)
 `
 
+const exitcode_statement = match('exitcode_statement')`
+  (?: ${ignored}? )
+  ${/exitcode/}
+  (?: ${/\s+>>\s+/} )
+  ( ${identifier} )  
+  (?: ${ignored}?)
+`
+
+const exits_statement = match('exits_statement')`
+  (?: ${ignored}? ${/exits/})
+  (${integer_argument})?
+  (?: ${ignored}?)
+  (?: ${/{/} ${ignored}?)
+  ${grammar}
+  (?: ${ignored}? ${/}/})
+`
+
 const grammar = match('grammar')`
   (
     (?: ${ignored})
@@ -73,6 +94,8 @@ const grammar = match('grammar')`
     | ${in_statement}
     | ${await_statement}
     | ${stdout_statement}
+    | ${exitcode_statement}
+    | ${exits_statement}
   )+
 `
 
