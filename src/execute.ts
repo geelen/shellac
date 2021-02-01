@@ -97,18 +97,10 @@ async function Await(chunk: ParsedToken, context: ExecutionContext) {
 async function Stdout(chunk: ParsedToken, context: ExecutionContext) {
   const { interps, last_cmd, captures } = context
   const [out_or_err, second] = chunk
-  if (
-    out_or_err !== 'stdout' &&
-    out_or_err !== 'stderr' &&
-    out_or_err !== 'exitcode'
-  )
-    throw new Error(
-      `Expected only 'stdout','stderr' or 'exitcode', got: ${out_or_err}`
-    )
-  const capture =
-    out_or_err === 'exitcode'
-      ? last_cmd?.retCode || 0
-      : trimFinalNewline(last_cmd?.[out_or_err] || '')
+
+  if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
+    throw new Error(`Expected only 'stdout' or 'stderr', got: ${out_or_err}`)
+  const capture = trimFinalNewline(last_cmd?.[out_or_err] || '')
 
   // @ts-ignore
   const tag: string = second.tag
