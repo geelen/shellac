@@ -2,6 +2,7 @@ import shellac from '../src'
 import * as tmp from 'tmp-promise'
 import fs from 'fs-extra'
 import path from 'path'
+import Shell from '../src/child-subshell/shell'
 
 describe('getting started', () => {
   it('should run a simple command', async () => {
@@ -280,15 +281,37 @@ describe('getting started', () => {
 
   it('should accept exits blocks', async () => {
     await shellac`
-      $ false
-      $ echo "wat"
+      exits {
+        $ echo "this gon fail" >&2; false
+      }
+      stderr >> ${(stderr) => expect(stderr).toBe('this gon fail')}
     `
   })
 
-  it('should demand exits blocks for failing commands', async () => {
-    // originally, if the command was the last in the block it wouldn't fail
-    await expect(shellac`
-      $ false
-    `).rejects.toEqual(expect.objectContaining({ retCode: 0 }))
+  describe('failure tests', () => {
+    let _logger: typeof Shell.logger
+    beforeEach(() => {
+      _logger = Shell.logger
+      Shell.logger = () => {}
+    })
+
+    afterEach(() => {
+      Shell.logger = _logger
+    })
+
+    it('should assert exit codes', async () => {
+      await expect(shellac`
+        exits(2) {
+          $ echo "this gon fail" >&2; false
+        }
+      `).rejects.toEqual(expect.objectContaining({ retCode: 1 }))
+    })
+
+    it('should demand exits blocks for failing commands', async () => {
+      // originally, if the command was the last in the block it wouldn't fail
+      await expect(shellac`
+        $ false
+      `).rejects.toEqual(expect.objectContaining({ retCode: 1 }))
+    })
   })
 })

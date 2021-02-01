@@ -24,7 +24,7 @@ async function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 async function Command(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, cwd, shell } = context
+  const { interps, cwd, shell, exit_expected } = context
   const [str] = chunk as string[]
   // @ts-ignore
   const split_cmd = str.split(/#__(?:FUNCTION|VALUE)_(\d+)__#/g)
@@ -44,6 +44,7 @@ async function Command(chunk: ParsedToken, context: ExecutionContext) {
     shell,
     cmd,
     pipe_logs: chunk.tag === 'logged_command',
+    exit_expected
   })
   return command.run()
 }
@@ -120,6 +121,21 @@ async function Stdout(chunk: ParsedToken, context: ExecutionContext) {
   return last_cmd
 }
 
+async function ExitsStatement(chunk: ParsedToken, context: ExecutionContext) {
+  const [exit_expected, block] =
+    chunk.length > 1 ? [Number(chunk[0][0]), chunk[1]] : [true, chunk[0]]
+  // const [[val_type, val_id], in_clause] = chunk
+  // if (val_type !== 'VALUE')
+  //   throw new Error(
+  //     'IN statements only accept value interpolations, not functions.'
+  //   )
+  //
+  return execute(block, {
+    ...context,
+    exit_expected,
+  })
+}
+
 export const execute = async (
   chunk: ParseResult,
   context: ExecutionContext
@@ -138,6 +154,8 @@ export const execute = async (
       return await Await(chunk, context)
     } else if (chunk.tag === 'stdout_statement') {
       return await Stdout(chunk, context)
+    } else if (chunk.tag === 'exits_statement') {
+      return await ExitsStatement(chunk, context)
     } else {
       return context.last_cmd
     }

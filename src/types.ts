@@ -1,6 +1,6 @@
-import { ExecaSyncReturnValue } from 'execa'
 import Shell from './child-subshell/shell'
 import Command from './child-subshell/command'
+import { ExitExpected } from './child-subshell/types'
 
 export type ShellacValueInterpolation =
   | string
@@ -37,4 +37,5 @@ export type ExecutionContext = {
   cwd: string
   captures: Captures
   shell: Shell
+  exit_expected: ExitExpected
 }
