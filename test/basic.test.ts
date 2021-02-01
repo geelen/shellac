@@ -289,13 +289,17 @@ describe('getting started', () => {
   })
 
   describe('failure tests', () => {
+    let logs: string[]
     let _logger: typeof Shell.logger
+
     beforeEach(() => {
+      logs = []
       _logger = Shell.logger
-      Shell.logger = () => {}
+      Shell.logger = (...args) => logs.push(...args)
     })
 
     afterEach(() => {
+      expect(logs.join('\n')).toContain('SHELLAC COMMAND FAILED')
       Shell.logger = _logger
     })
 
