@@ -123,6 +123,31 @@ async function Stdout(chunk: ParsedToken, context: ExecutionContext) {
   return last_cmd
 }
 
+async function Exitcode(chunk: ParsedToken, context: ExecutionContext) {
+  const { interps, last_cmd } = context
+  const [exitcode, second] = chunk
+
+  if (exitcode !== 'exitcode')
+    throw new Error(`Expected only 'exitcode', got: ${exitcode}`)
+  const capture = last_cmd?.retCode || 0
+
+  // @ts-ignore
+  const tag: string = second.tag
+  if (tag === 'identifier') {
+    const [val_type, val_id] = second
+    if (val_type !== 'FUNCTION')
+      throw new Error(
+        'exitcode statements only accept function interpolations, not values.'
+      )
+
+    // @ts-ignore
+    await interps[val_id](capture)
+  } else {
+    throw new Error('exitcode statements expect an interpolation function.')
+  }
+  return last_cmd
+}
+
 async function ExitsStatement(chunk: ParsedToken, context: ExecutionContext) {
   const [exit_expected, block] =
     chunk.length > 1 ? [Number(chunk[0][0]), chunk[1]] : [true, chunk[0]]
@@ -156,6 +181,8 @@ export const execute = async (
       return await Await(chunk, context)
     } else if (chunk.tag === 'stdout_statement') {
       return await Stdout(chunk, context)
+    } else if (chunk.tag === 'exitcode_statement') {
+      return await Exitcode(chunk, context)
     } else if (chunk.tag === 'exits_statement') {
       return await ExitsStatement(chunk, context)
     } else {

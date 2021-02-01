@@ -61,9 +61,17 @@ const await_statement = match('await_statement')`
 
 const stdout_statement = match('stdout_statement')`
   (?: ${ignored}? )
-  ${/std(out|err)|exitcode/}
+  ${/std(out|err)/}
   (?: ${/\s+>>\s+/} )
   ( ${identifier} | ${variable_name} )  
+  (?: ${ignored}?)
+`
+
+const exitcode_statement = match('exitcode_statement')`
+  (?: ${ignored}? )
+  ${/exitcode/}
+  (?: ${/\s+>>\s+/} )
+  ( ${identifier} )  
   (?: ${ignored}?)
 `
 
@@ -86,6 +94,7 @@ const grammar = match('grammar')`
     | ${in_statement}
     | ${await_statement}
     | ${stdout_statement}
+    | ${exitcode_statement}
     | ${exits_statement}
   )+
 `

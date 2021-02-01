@@ -252,7 +252,7 @@ describe('parser', () => {
             identifier:
               FUNCTION
               2
-        stdout_statement:
+        exitcode_statement:
           exitcode
             identifier:
               FUNCTION
