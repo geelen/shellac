@@ -232,4 +232,31 @@ describe('parser', () => {
             command_line: false
     `)
   })
+
+  it('should allow observing the exit code of a block', () => {
+    expect(
+      parser(`
+        exits {
+          $ exit 2
+        }
+        stdout >> #__FUNCTION_2__#
+        exitcode >> #__FUNCTION_3__#
+      `)
+    ).toParseTo(`
+      grammar:
+        exits_statement:
+          grammar:
+            command_line: exit 2
+        stdout_statement:
+          stdout
+            identifier:
+              FUNCTION
+              2
+        stdout_statement:
+          exitcode
+            identifier:
+              FUNCTION
+              3
+    `)
+  })
 })

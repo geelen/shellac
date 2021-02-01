@@ -18,7 +18,7 @@ export default class Command {
   private pipe_logs: boolean
   private exit_expected: ExitExpected
 
-  private retCode?: number
+  retCode?: number
   private promiseResolve?: any
   private promiseReject?: any
   private promise?: Promise<unknown>

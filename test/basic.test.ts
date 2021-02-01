@@ -282,8 +282,9 @@ describe('getting started', () => {
   it('should accept exits blocks', async () => {
     await shellac`
       exits {
-        $ echo "this gon fail" >&2; false
+        $ node -e 'process.stderr.write("this gon fail"); process.exit(2)'
       }
+      exitcode >> ${(exitcode) => expect(exitcode).toBe(2)}
       stderr >> ${(stderr) => expect(stderr).toBe('this gon fail')}
     `
   })

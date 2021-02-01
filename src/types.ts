@@ -25,7 +25,7 @@ export type ParsedToken = Array<ParseResult> & { tag: string }
 export type ParseResult = string | ParsedToken
 export type Parser = (str: string) => undefined | ParseResult
 export type ExecResult = Command | null
-export type Captures = { [key: string]: string }
+export type Captures = { [key: string]: string | number }
 export type ShellacImpl = (
   s: TemplateStringsArray,
   ...interps: ShellacInterpolations[]
