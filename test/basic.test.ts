@@ -42,7 +42,8 @@ describe('getting started', () => {
       stdout >> env_var
     `
 
-    expect(wc).toBe('5')
+    expect(wc).toMatch(/^\s+5/)
+    // expect(wc).toBe('5')
     expect(env_var).toBe(`boats`)
   })
 
@@ -275,5 +276,19 @@ describe('getting started', () => {
       $ cd ..; pwd
       stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
     `
+  })
+
+  it('should accept exits blocks', async () => {
+    await shellac`
+      $ false
+      $ echo "wat"
+    `
+  })
+
+  it('should demand exits blocks for failing commands', async () => {
+    // originally, if the command was the last in the block it wouldn't fail
+    await expect(shellac`
+      $ false
+    `).rejects.toEqual(expect.objectContaining({ retCode: 0 }))
   })
 })

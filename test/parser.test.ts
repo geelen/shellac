@@ -201,4 +201,35 @@ describe('parser', () => {
         command_line: echo lol
     `)
   })
+
+  it('should parse bare exits', () => {
+    expect(
+      parser(`
+        exits {
+          $ false
+        }
+      `)
+    ).toParseTo(`
+      grammar:
+        exits_statement:
+          grammar:
+            command_line: false
+    `)
+  })
+
+  it('should parse exits with errcode args', () => {
+    expect(
+      parser(`
+        exits(1) {
+          $ false
+        }
+      `)
+    ).toParseTo(`
+      grammar:
+        exits_statement:
+          integer_argument: 1
+          grammar:
+            command_line: false
+    `)
+  })
 })
