@@ -43,8 +43,7 @@ describe('getting started', () => {
       stdout >> env_var
     `
 
-    expect(wc).toMatch(/^\s+5/)
-    // expect(wc).toBe('5')
+    expect(wc).toBe('5')
     expect(env_var).toBe(`boats`)
   })
 
