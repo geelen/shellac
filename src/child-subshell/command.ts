@@ -48,7 +48,7 @@ export default class Command {
     this.interactive = interactive
     this.exit_expected = exit_expected;
 
-    this.exec = `cd ${cwd};\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
+    this.exec = `cd "${cwd}";\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
 
     this.shell.getStdout().on('data', this.handleStdoutData)
     this.shell.getStderr().on('data', this.handleStderrData)

@@ -43,7 +43,7 @@ describe('getting started', () => {
       stdout >> env_var
     `
 
-    expect(wc).toBe('5')
+    expect(wc.trim()).toBe('5')
     expect(env_var).toBe(`boats`)
   })
 
@@ -216,6 +216,19 @@ describe('getting started', () => {
             '└── some.file',
           ].join('\n')
         )}
+    `
+  })
+
+  it('should handle directories with spaces', async () => {
+    const dir = await tmp.dir({ unsafeCleanup: true })
+    await shellac`
+      $ mkdir "${dir.path}/lol boats"
+      in ${path.join(dir.path, 'lol boats')} {
+        $$ pwd
+      }     
+      stdout >> ${async (output) =>
+        expect(output).toContain('lol boats')
+      }
     `
   })
 
