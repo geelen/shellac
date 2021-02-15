@@ -1,6 +1,7 @@
-import { ExecResult, ParsedToken, ParseResult, ExecutionContext } from './types'
+import { ExecResult, ExecutionContext, ParsedToken, ParseResult } from './types'
 import ShellCommand from './child-subshell/command'
 import { trimFinalNewline } from './child-subshell/utils'
+import path from 'path'
 
 async function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
   const { interps, last_cmd } = context
@@ -51,21 +52,36 @@ async function Command(chunk: ParsedToken, context: ExecutionContext) {
 
 async function InStatement(chunk: ParsedToken, context: ExecutionContext) {
   const { interps } = context
-  const [[val_type, val_id], in_clause] = chunk
-  if (val_type !== 'VALUE')
-    throw new Error(
-      'IN statements only accept value interpolations, not functions.'
-    )
+  const [arg, in_clause] = chunk
 
-  // @ts-ignore
-  const new_cwd = interps[val_id]
+  if (typeof arg === 'string') {
+    throw new Error('IN statements need an argument token.')
+  }
+
+  let new_cwd: string
+  if (arg.tag === 'identifier') {
+    const [val_type, val_id] = arg
+
+    if (val_type !== 'VALUE')
+      throw new Error(
+        'IN statements only accept value interpolations, not functions.'
+      )
+
+    new_cwd = interps[(val_id as unknown) as number] as string
+  } else if (arg.tag === 'string_arg') {
+    new_cwd = (arg[0] as string).replace(/^"|"$/g, '')
+  } else {
+    throw new Error(`Unknown argument token for IN statement: ${arg.tag}`)
+  }
+
   if (!new_cwd || typeof new_cwd !== 'string')
     throw new Error(
       `IN statements need a string value to set as the current working dir`
     )
+
   return execute(in_clause, {
     ...context,
-    cwd: new_cwd,
+    cwd: path.resolve(context.cwd, new_cwd),
   })
 }
 

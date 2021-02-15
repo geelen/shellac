@@ -35,7 +35,7 @@ describe('getting started', () => {
 
   it('should handle bash-y things', async () => {
     const { env_var, wc } = await shellac`
-      $ echo "omfg" | wc -c
+      $ echo "omfg" | wc -c | tr -d ' '
       stdout >> wc
       
       $ LOL=boats
@@ -43,7 +43,7 @@ describe('getting started', () => {
       stdout >> env_var
     `
 
-    expect(wc.trim()).toBe('5')
+    expect(wc).toBe('5')
     expect(env_var).toBe(`boats`)
   })
 
@@ -225,9 +225,25 @@ describe('getting started', () => {
       $ mkdir "${dir.path}/lol boats"
       in ${path.join(dir.path, 'lol boats')} {
         $$ pwd
-      }     
-      stdout >> ${async (output) =>
-        expect(output).toContain('lol boats')
+      }
+      stdout >> ${async (output) => expect(output).toContain('lol boats')}
+    `
+  })
+
+  it('should handle nested IN statements', async () => {
+    const dir = await tmp.dir({ unsafeCleanup: true })
+    await shellac.in(dir.path)`
+      $ mkdir "lol boats"
+      in "./lol boats" {
+        $$ pwd
+        stdout >> ${async (output) =>
+          expect(output).toBe(path.join(dir.path, 'lol boats'))}
+        $ mkdir subdir
+        in subdir {
+          $$ pwd
+          stdout >> ${async (output) =>
+            expect(output).toBe(path.join(dir.path, 'lol boats', 'subdir'))}
+        }
       }
     `
   })

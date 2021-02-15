@@ -154,6 +154,31 @@ describe('parser', () => {
     `)
   })
 
+  it('should parse an in string statement', () => {
+    expect(
+      parser(`
+        $ pwd
+        in "./relative path" {
+          $ pwd
+        }
+        in ./no-spaces {
+          $ pwd
+        }
+      `)
+    ).toParseTo(`
+      grammar:
+        command_line: pwd
+        in_statement:
+          string_arg: "./relative path"
+          grammar:
+            command_line: pwd
+        in_statement:
+          string_arg: ./no-spaces
+          grammar:
+            command_line: pwd
+    `)
+  })
+
   it('should parse an await statement', () => {
     expect(
       parser(`
