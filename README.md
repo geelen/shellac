@@ -13,10 +13,11 @@ A tool to make invoking a series of shell commands safer & better-looking.
 ```js
 import shellac from 'shellac'
 
-test('morty', async () => await shellac`
+test('morty', async () =>
+  await shellac`
   $ echo "End-to-end CLI testing made nice"
   $ node -p "5 * 9"
-  stdout >> ${ answer => expect(Number(answer)).toBeGreaterThan(40) }
+  stdout >> ${(answer) => expect(Number(answer)).toBeGreaterThan(40)}
 `)
 ```
 
@@ -33,8 +34,8 @@ await shellac`
   $$ echo "This command will print to terminal"
   
   // Use stdout/err and >> to check the output of the last command
-  stdout >> ${ last_cmd_stdout => {
-    expect(last_cmd_stdout).toBe("This command will print to terminal")
+  stdout >> ${(last_cmd_stdout) => {
+    expect(last_cmd_stdout).toBe('This command will print to terminal')
   }}
 `
 ```
@@ -48,7 +49,7 @@ const { stdout, stderr } = await shellac`
   $ echo "This command will run but its output will be lost"
   $ echo "The last command executed returns its stdout/err"
 `
-expect(stdout).toBe("The last command executed returns its stdout/err")
+expect(stdout).toBe('The last command executed returns its stdout/err')
 ```
 
 You can also return named captures from a series of commands:
@@ -69,7 +70,7 @@ You can use `if ${ ... } { ... } else { ... }` to run conditionally based on the
 
 ```js
 await shellac`
-  if ${ process.env.CLEAN_RUN } {
+  if ${process.env.CLEAN_RUN} {
     $ yarn create react-app
   } else {
     $ git reset --hard
@@ -88,14 +89,28 @@ You can either use an `in` directive:
 ```js
 await shellac`
   // Change directory for the duration of the block:
-  in ${ __dirname } {
+  in ${__dirname} {
     $ pwd
-    stdout >> ${ cwd => expect(cwd).toBe(__dirname) }
+    stdout >> ${(cwd) => expect(cwd).toBe(__dirname)}
   }
   
   // By default we run in process.cwd()
   $ pwd
-  stdout >> ${ cwd => expect(cwd).toBe(process.cwd()) }
+  stdout >> ${(cwd) => expect(cwd).toBe(process.cwd())}
+  
+  // Relative paths work too:
+  $ mkdir -p subdir
+  in ./subdir {
+    $ pwd
+    stdout >> ${(cwd) => expect(cwd).toBe(path.join(process.cwd(), 'subdir'))}
+    
+    $ mkdir -p nesting-ok
+    in "nesting-ok" {
+      $ pwd
+      stdout >> ${(cwd) =>
+        expect(cwd).toBe(path.join(process.cwd(), 'subdir', 'nesting-ok'))}
+    }
+  }
 `
 ```
 
@@ -107,7 +122,7 @@ const dir = await tmp.dir()
 
 await shellac.in(dir.path)`
   $ pwd
-  stdout >> ${ cwd => expect(cwd).toBe(dir.path) }
+  stdout >> ${(cwd) => expect(cwd).toBe(dir.path)}
 `
 ```
 
@@ -119,11 +134,8 @@ Use the `await` declaration to invoke & wait for some JS inline with your script
 import fs from 'fs-extra'
 
 await shellac.in(cwd)`
-  await ${ async () => {
-    await fs.writeFile(
-      path.join(cwd, 'bigfile.dat'),
-      huge_data
-    )
+  await ${async () => {
+    await fs.writeFile(path.join(cwd, 'bigfile.dat'), huge_data)
   }}
   
   $ ls -l
@@ -144,15 +156,17 @@ await shellac.in(cwd)`
 These can even be promises or async functions:
 
 ```js
-const getAllPackageNames = async () => { /* ... */ }
+const getAllPackageNames = async () => {
+  /* ... */
+}
 await shellac.in(cwd)`
   // You can pass a promise and it will be awaited
-  $ yarn link ${ getAllPackageNames() }
+  $ yarn link ${getAllPackageNames()}
   
   // ...
   
   // Or pass an async function and shellac will call and await it
-  $ yarn unlink ${ async () => getAllPackageNames() }
+  $ yarn unlink ${async () => getAllPackageNames()}
 `
 ```
 
@@ -163,12 +177,12 @@ A `shellac` call invokes a single instance of `bash` for the duration, so change
 ```js
 await shellac`
   $ echo $LOL
-  stdout >> ${lol => expect(lol).toBe('') }
+  stdout >> ${(lol) => expect(lol).toBe('')}
   
   $ LOL=boats
   
   $ echo $LOL
-  stdout >> ${lol => expect(lol).toBe('boats') }
+  stdout >> ${(lol) => expect(lol).toBe('boats')}
 `
 ```
 
@@ -180,23 +194,23 @@ const parent_dir = path.resolve(cwd, '..')
 await shellac.in(cwd)`
   // Normal behaviour
   $ pwd
-  stdout >> ${pwd => expect(pwd).toBe(cwd) }
+  stdout >> ${(pwd) => expect(pwd).toBe(cwd)}
   
   // Has no effect on the remaining commands
   $ cd ..
   
   $ pwd
-  stdout >> ${pwd => expect(pwd).toBe(cwd) }
+  stdout >> ${(pwd) => expect(pwd).toBe(cwd)}
   
   // If you want to change dir use in {}
-  in ${ parent_dir } {
+  in ${parent_dir} {
     $ pwd
-    stdout >> ${pwd => expect(pwd).toBe(parent_dir) }
+    stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
   }
   
   // Or do it on a single line
   $ cd .. && pwd
-  stdout >> ${pwd => expect(pwd).toBe(parent_dir) }
+  stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
   
   // Joining commands with ; also works
   $ cd ..; pwd
@@ -216,8 +230,8 @@ await shellac`
   exits {
     $ rm a.file
   }
-  exitcode >> ${ code => expect(code).toBe(1) }
-  stderr >> ${ stderr => expect(stderr).toContain('No such file or directory') }
+  exitcode >> ${(code) => expect(code).toBe(1)}
+  stderr >> ${(stderr) => expect(stderr).toContain('No such file or directory')}
 `
 ```
 
@@ -315,7 +329,7 @@ Confirm a file is present:
 ```js
 shellac`
   $ ls -l
-  stdout >> ${files => expect(files).toMatch('fab.zip')}
+  stdout >> ${(files) => expect(files).toMatch('fab.zip')}
 `
 ```
 
