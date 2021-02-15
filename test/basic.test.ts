@@ -346,5 +346,36 @@ describe('getting started', () => {
         $ false
       `).rejects.toEqual(expect.objectContaining({ retCode: 1 }))
     })
+
+    it('should fail trying to run IN a non-existent directory', async () => {
+      const dir = await tmp.dir({ unsafeCleanup: true })
+      const subdir = path.join(dir.path, 'no-existo')
+      await expect(shellac.in(subdir)`
+        $ pwd
+      `).rejects.toEqual(
+        expect.objectContaining({
+          retCode: 1,
+          stderr: expect.stringContaining('No such file or directory'),
+        })
+      )
+
+      let checks_run_before_failure = 0
+      await expect(shellac.in(dir.path)`
+        $ pwd
+        stdout >> ${(stdout) => {
+          checks_run_before_failure++
+          expect(stdout).toBe(dir.path)
+        }}
+        in ./not-there-eh {
+          $ pwd
+        }
+      `).rejects.toEqual(
+        expect.objectContaining({
+          retCode: 1,
+          stderr: expect.stringContaining('No such file or directory'),
+        })
+      )
+      expect(checks_run_before_failure).toBe(1)
+    })
   })
 })
