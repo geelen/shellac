@@ -319,6 +319,23 @@ shellac`
 `
 ```
 
+## Contributing
+
+To hack on the parser & source, run:
+
+```
+yarn
+yarn dev
+```
+
+This will build the Parser (using reghex & babel) and the Runtime (using typescript) and watch for changes. Then, in another terminal
+
+```
+yarn test --watch
+```
+
+Add a test for what you're about to add, then hack the source until it passes!
+
 ## Acknowledgements
 
 [`@kitten`](https://github.com/kitten) for [reghex](https://github.com/kitten/reghex) which is genuinely incredible and the only reason this library is possible at all.
