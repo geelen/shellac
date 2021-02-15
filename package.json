@@ -24,6 +24,7 @@
     "build": "yarn build:parser && yarn build:ts",
     "build:parser": "babel src/parser.js -d lib",
     "build:ts": "tsc --outDir lib",
+    "dev": "run-p -l 'build:parser --watch' 'build:ts --watch'",
     "prepack": "npm run build",
     "test": "jest"
   },
@@ -38,6 +39,7 @@
     "@types/jest": "^26.0.15",
     "fs-extra": "^9.0.1",
     "jest": "^26.6.3",
+    "npm-run-all": "^4.1.5",
     "tmp-promise": "^3.0.2",
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.2"
