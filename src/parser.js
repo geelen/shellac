@@ -30,6 +30,10 @@ const variable_name = match('variable_name')`
   ${/\S+/}
 `
 
+const string_arg = match('string_arg')`
+  ${ /"[^"]*"/ } | ${/\S+/}
+`
+
 const if_statement = match('if_statement')`
   (?: ${ignored}? ${/if\s+/})
   ${identifier}
@@ -46,7 +50,7 @@ const if_statement = match('if_statement')`
 
 const in_statement = match('in_statement')`
   (?: ${ignored}? ${/in\s+/})
-  ${identifier}
+  (${identifier} | ${string_arg})
   (?: ${ignored}?)
   (?: ${/{/} ${ignored}?)
   ${grammar}

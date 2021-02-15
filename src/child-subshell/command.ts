@@ -48,7 +48,7 @@ export default class Command {
     this.interactive = interactive
     this.exit_expected = exit_expected;
 
-    this.exec = `cd "${cwd}";\n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
+    this.exec = `cd "${cwd}" && \n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
 
     this.shell.getStdout().on('data', this.handleStdoutData)
     this.shell.getStderr().on('data', this.handleStderrData)
@@ -112,6 +112,8 @@ export default class Command {
         const obj = {
           retCode: -1,
           cmd: this.cmd,
+          stdout: this.stdout,
+          stderr: this.stderr
         }
 
         this.promiseReject(obj)
@@ -143,6 +145,8 @@ export default class Command {
     const obj = {
       retCode: this.retCode,
       cmd: this.cmd,
+      stdout: this.stdout,
+      stderr: this.stderr
     }
 
     const matching_exit_code = this.retCode === this.exit_expected
