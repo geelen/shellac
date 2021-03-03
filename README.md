@@ -357,3 +357,5 @@ Add a test for what you're about to add, then hack the source until it passes!
 [`@superhighfives`](https://github.com/superhighfives) for coming up with the name!
 
 [`exactly`](https://github.com/emilkarlen/exactly), [`bats`](https://github.com/sstephenson/bats), [`Expect`](https://en.wikipedia.org/wiki/Expect), [`cram`](https://bitheap.org/cram/), [`aruba`](https://github.com/cucumber/aruba) for prior art.
+
+Rendered with [Eleventy](https://www.11ty.dev/) and deployed with [Cloudflare Pages](https://pages.dev) to https://shellac.pages.dev
