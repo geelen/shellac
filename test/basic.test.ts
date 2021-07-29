@@ -317,7 +317,7 @@ describe('getting started', () => {
     `
   })
 
-  it.only('should run background tasks', async () => {
+  it('should run background tasks', async () => {
     const { pid, promise } = await shellac.bg`
       $$ echo background boi start
       $$ for i in 1 2 3; do echo $i; sleep 1; done
@@ -331,7 +331,7 @@ describe('getting started', () => {
     expect(stdout).toBe(`background boi done`)
   })
 
-  it.only('should permit killing background tasks', async () => {
+  it('should permit killing background tasks', async () => {
     const { pid, promise } = await shellac.bg`
       $$ echo background boi start
       exits {
