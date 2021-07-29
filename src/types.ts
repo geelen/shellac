@@ -1,6 +1,7 @@
 import Shell from './child-subshell/shell'
 import Command from './child-subshell/command'
 import { ExitExpected } from './child-subshell/types'
+import {ChildProcessWithoutNullStreams} from "child_process";
 
 export type ShellacValueInterpolation =
   | string
@@ -21,6 +22,12 @@ export type ShellacReturnVal = {
   stderr: string
   [key: string]: string
 }
+export type ShellacBGReturnVal = {
+  process: ChildProcessWithoutNullStreams
+  pid: number
+  kill: () => void
+  promise: Promise<ShellacReturnVal>
+}
 export type ParsedToken = Array<ParseResult> & { tag: string }
 export type ParseResult = string | ParsedToken
 export type Parser = (str: string) => undefined | ParseResult
@@ -30,6 +37,10 @@ export type ShellacImpl = (
   s: TemplateStringsArray,
   ...interps: ShellacInterpolations[]
 ) => Promise<ShellacReturnVal>
+export type ShellacBGImpl = (
+  s: TemplateStringsArray,
+  ...interps: ShellacInterpolations[]
+) => Promise<ShellacBGReturnVal>
 
 export type ExecutionContext = {
   interps: ShellacInterpolations[]

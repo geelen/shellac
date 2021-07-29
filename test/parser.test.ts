@@ -284,4 +284,17 @@ describe('parser', () => {
               3
     `)
   })
+
+  it('should allow forking a background task', () => {
+    expect(
+      parser(`
+        $$ echo background boi
+        $$ for i in 1 2 3; do echo $i; sleep 1; done &
+      `)
+    ).toParseTo(`
+      grammar:
+        logged_command: echo background boi
+        logged_command: for i in 1 2 3; do echo $i; sleep 1; done &
+    `)
+  })
 })

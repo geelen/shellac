@@ -2,7 +2,7 @@ import child_process, { ChildProcessWithoutNullStreams } from 'child_process'
 import { Logger } from './types'
 
 export default class Shell {
-  private process: ChildProcessWithoutNullStreams
+  process: ChildProcessWithoutNullStreams
   static logger: Logger = (...args: any[]) =>
     process.stdout.write(args.map((a) => a.toString()).join('\n'))
 
@@ -15,6 +15,7 @@ export default class Shell {
 
     this.process = child_process.spawn('bash', ['--noprofile', '--norc'], {
       env,
+      detached: true
     })
 
     this.process.stdout.setEncoding('utf8')

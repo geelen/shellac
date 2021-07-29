@@ -1,10 +1,12 @@
 /* NOTE: IMPORTING LIB WHICH IS COMPILED WITH REGHEX */
 // @ts-ignore
 import _parser from '../lib/parser'
-import { Captures, Parser, ParseResult, ShellacImpl } from './types'
+import {Captures, Parser, ParseResult, ShellacBGImpl, ShellacImpl, ShellacInterpolations, ShellacReturnVal} from './types'
 import { execute } from './execute'
-import Shell from "./child-subshell/shell";
-import {trimFinalNewline} from "./child-subshell/utils";
+import Shell from './child-subshell/shell'
+import { trimFinalNewline } from './child-subshell/utils'
+
+const lazyCreateShell = async () => new Shell()
 
 export const parser = (str: string) => (_parser as Parser)(str.trim())
 
@@ -27,7 +29,7 @@ export const log_parse_result = (
   }
 }
 
-const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
+const _shellac = (cwd: string, lazyShell: () => Promise<Shell>): ShellacImpl => async (s, ...interps) => {
   let str = s[0]
 
   for (let i = 0; i < interps.length; i++) {
@@ -45,7 +47,7 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
 
   const captures: Captures = {}
 
-  const shell = new Shell()
+  const shell = await lazyShell()
 
   const last_cmd = await execute(parsed, {
     interps,
@@ -64,8 +66,19 @@ const _shellac = (cwd: string): ShellacImpl => async (s, ...interps) => {
   }
 }
 
-const shellac = Object.assign(_shellac(process.cwd()), {
-  in: (cwd: string) => _shellac(cwd)
+const bgShellac: ShellacBGImpl = async (s, ...interps) => {
+  const shell = await lazyCreateShell()
+  return {
+    process: shell.process,
+    pid: shell.process.pid,
+    promise: _shellac(process.cwd(), async () => shell)(s, ...interps),
+    kill: () => shell.exit()
+  }
+}
+
+const shellac = Object.assign(_shellac(process.cwd(), lazyCreateShell), {
+  in: (cwd: string) => _shellac(cwd, lazyCreateShell),
+  bg: bgShellac,
 })
 
 export default shellac

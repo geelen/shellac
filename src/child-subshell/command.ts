@@ -50,6 +50,7 @@ export default class Command {
 
     this.exec = `cd "${cwd}" && \n${this.cmd};echo __END_OF_COMMAND_[$?]__\n`
 
+    this.shell.process.on('exit', this.finish)
     this.shell.getStdout().on('data', this.handleStdoutData)
     this.shell.getStderr().on('data', this.handleStderrData)
     this.runningState = RUNNING_STATE.INIT

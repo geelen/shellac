@@ -317,6 +317,36 @@ describe('getting started', () => {
     `
   })
 
+  it.only('should run background tasks', async () => {
+    const { pid, promise } = await shellac.bg`
+      $$ echo background boi start
+      $$ for i in 1 2 3; do echo $i; sleep 1; done
+      $$ echo background boi done
+    `
+    expect(pid).toBeGreaterThan(process.pid)
+    await shellac`
+      $$ ps ${pid}
+    `
+    const { stdout } = await promise
+    expect(stdout).toBe(`background boi done`)
+  })
+
+  it.only('should permit killing background tasks', async () => {
+    const { pid, promise } = await shellac.bg`
+      $$ echo background boi start
+      exits {
+        $$ for i in 1 2 3 4 5 6 7 8 9 10; do echo $i; sleep 1; done
+      }
+    `
+    expect(pid).toBeGreaterThan(process.pid)
+    await shellac`
+      $$ ps ${pid}
+      $$ sleep 3
+      $$ kill ${pid}
+    `
+    await promise
+  })
+
   describe('failure tests', () => {
     let logs: string[]
     let _logger: typeof Shell.logger
