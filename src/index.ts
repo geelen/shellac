@@ -1,35 +1,15 @@
-/* NOTE: IMPORTING LIB WHICH IS COMPILED WITH REGHEX */
-// @ts-ignore
-import _parser from '../lib/parser'
-import {Captures, Parser, ParseResult, ShellacBGImpl, ShellacImpl, ShellacInterpolations, ShellacReturnVal} from './types'
+import { Captures, ShellacBGImpl, ShellacImpl } from './types'
 import { execute } from './execute'
 import Shell from './child-subshell/shell'
 import { trimFinalNewline } from './child-subshell/utils'
+import { parser } from './parser'
 
 const lazyCreateShell = async () => new Shell()
 
-export const parser = (str: string) => (_parser as Parser)(str.trim())
-
-export const log_parse_result = (
-  chunk: ParseResult,
-  depth = 0,
-  solo = false
-): string => {
-  if (!chunk) return ''
-
-  if (Array.isArray(chunk) && chunk.tag) {
-    const indent = `${' '.repeat(depth)}`
-    const newline = `${depth === 0 ? '' : '\n'}`
-    return `${newline}${indent}${chunk.tag + ':'}${chunk
-      .map((each) => log_parse_result(each, depth + 2, chunk.length === 1))
-      .join('')}`
-  } else {
-    const indent = solo ? '' : '\n' + ' '.repeat(depth)
-    return `${indent} ${(chunk as string).trim()}`
-  }
-}
-
-const _shellac = (cwd: string, lazyShell: () => Promise<Shell>): ShellacImpl => async (s, ...interps) => {
+const _shellac = (
+  cwd: string,
+  lazyShell: () => Promise<Shell>
+): ShellacImpl => async (s, ...interps) => {
   let str = s[0]
 
   for (let i = 0; i < interps.length; i++) {
@@ -72,7 +52,7 @@ const bgShellac: ShellacBGImpl = async (s, ...interps) => {
     process: shell.process,
     pid: shell.process.pid,
     promise: _shellac(process.cwd(), async () => shell)(s, ...interps),
-    kill: () => shell.exit()
+    kill: () => shell.exit(),
   }
 }
 

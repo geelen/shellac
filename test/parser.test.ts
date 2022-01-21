@@ -1,6 +1,5 @@
-import { parser, log_parse_result } from '../src'
-import {ParseResult} from "../src/types";
-
+import { ParseResult } from '../src/types'
+import { log_parse_result, parser } from '../src/parser'
 
 declare global {
   namespace jest {
