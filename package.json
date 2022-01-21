@@ -15,7 +15,8 @@
   },
   "license": "MIT",
   "author": "Glen Maddern",
-  "main": "lib/index.js",
+  "type": "module",
+  "main": "esm/index.js",
   "module": "esm/index.js",
   "types": "lib/index.d.ts",
   "files": [
