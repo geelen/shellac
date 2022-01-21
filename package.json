@@ -1,6 +1,6 @@
 {
   "name": "shellac",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "description": "Protect and beautify your shell scripting",
   "keywords": [
     "shell"
