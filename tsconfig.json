@@ -2,8 +2,8 @@
   "compilerOptions": {
     /* Basic Options */
     // "incremental": true,                   /* Enable incremental compilation */
-    "target": "es2019",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
     "lib": ["es2020", "dom"],
     "declaration": true,
     //    "declarationMap": true,

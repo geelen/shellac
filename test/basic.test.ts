@@ -3,6 +3,8 @@ import * as tmp from 'tmp-promise'
 import fs from 'fs-extra'
 import path from 'path'
 import Shell from '../src/child-subshell/shell'
+import {fileURLToPath} from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 describe('getting started', () => {
   it('should run a simple command', async () => {

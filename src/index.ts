@@ -50,7 +50,7 @@ const bgShellac: ShellacBGImpl = async (s, ...interps) => {
   const shell = await lazyCreateShell()
   return {
     process: shell.process,
-    pid: shell.process.pid,
+    pid: shell.process.pid!,
     promise: _shellac(process.cwd(), async () => shell)(s, ...interps),
     kill: () => shell.exit(),
   }
