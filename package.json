@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "build": "yarn build:parser && yarn build:ts",
-    "build:parser": "babel src/grammar.js -d lib",
+    "build:parser": "babel src/grammar.js -o lib/grammar.cjs",
     "build:ts": "tsc --outDir lib && tsc --module esnext --outDir esm",
     "dev": "run-p -l 'build:parser --watch' 'build:ts --watch'",
     "prepack": "npm run build",
