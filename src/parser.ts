@@ -1,6 +1,6 @@
 /* NOTE: IMPORTING LIB WHICH IS COMPILED WITH REGHEX */
 // @ts-ignore
-import _parser from '../esm/grammar'
+import _parser from '../dist/grammar.js'
 import {Parser, ParseResult} from "./types";
 
 export const parser = (str: string) => (_parser as Parser)(str.trim())

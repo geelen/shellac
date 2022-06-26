@@ -16,17 +16,16 @@
   "license": "MIT",
   "author": "Glen Maddern",
   "type": "module",
-  "main": "esm/index.js",
-  "module": "esm/index.js",
-  "types": "esm/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "/lib",
-    "/esm"
+    "/dist"
   ],
   "scripts": {
     "build": "yarn build:parser && yarn build:ts",
-    "build:parser": "babel src/grammar.js -d esm",
-    "build:ts": "tsc --outDir lib && tsc --module esnext --outDir esm",
+    "build:parser": "babel src/grammar.js -d dist",
+    "build:ts": "tsup src/index.ts --format esm,cjs",
     "dev": "run-p -l 'build:parser --watch' 'build:ts --watch'",
     "prepack": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest"
@@ -45,6 +44,7 @@
     "npm-run-all": "^4.1.5",
     "tmp-promise": "^3.0.2",
     "ts-jest": "^27.1.3",
+    "tsup": "^6.1.2",
     "typescript": "^4.1.2"
   }
 }
