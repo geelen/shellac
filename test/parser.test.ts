@@ -284,6 +284,25 @@ describe('parser', () => {
     `)
   })
 
+  it('should allow appending operations as well as storing stdout', () => {
+    expect(
+      parser(`
+        $$ echo lol
+        $ echo xyz >> log.txt
+        stdout >> #__FUNCTION_2__#
+      `)
+    ).toParseTo(`
+      grammar:
+        logged_command: echo lol
+        command_line: echo xyz >> log.txt
+        stdout_statement:
+          stdout
+            identifier:
+              FUNCTION
+              2
+    `)
+  })
+
   it('should allow forking a background task', () => {
     expect(
       parser(`

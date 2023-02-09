@@ -294,16 +294,15 @@ describe('getting started', () => {
       $ git rev-parse --short HEAD
       stdout >> current_sha
       
-      $ npm init -y
-      $ cat package.json
+      $ echo '{"a":1,"b":2}' >> test.json
+      $ cat test.json
       json >> pkg
     `
 
     expect(default_branch).toMatch(/^(main|master)$/)
     expect(current_branch).toEqual('new-branch')
     expect(current_sha).toMatch(/^[a-f0-9]{7}$/)
-    expect(pkg.version).toEqual("1.0.0")
-    expect(pkg.keywords).toEqual([])
+    expect(pkg).toEqual({a:1, b:2})
   })
 
   it('should only change dirs with in', async () => {
