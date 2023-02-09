@@ -20,7 +20,7 @@ export type ShellacInterpolations =
 export type ShellacReturnVal = {
   stdout: string
   stderr: string
-  [key: string]: string
+  [key: string]: string | any
 }
 export type ShellacBGReturnVal = {
   process: ChildProcessWithoutNullStreams

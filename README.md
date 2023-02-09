@@ -64,6 +64,18 @@ const { current_sha, current_branch } = await shellac`
 `
 ```
 
+Or even convert it to JSON before doing so:
+
+```js
+const { tsconfig } = await shellac`
+  $ cat package.json
+  json >> ${(package_json) => ... }
+
+  $ cat tsconfig.json
+  json >> tsconfig
+`
+```
+
 ### Branching
 
 You can use `if ${ ... } { ... } else { ... }` to run conditionally based on the value of an interpolation:

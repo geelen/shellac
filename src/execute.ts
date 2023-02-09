@@ -1,6 +1,6 @@
 import { ExecResult, ExecutionContext, ParsedToken, ParseResult } from './types'
 import ShellCommand from './child-subshell/command'
-import { trimFinalNewline } from './child-subshell/utils'
+import {parseJSON, trimFinalNewline} from './child-subshell/utils'
 import path from 'path'
 
 async function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
@@ -114,9 +114,12 @@ async function Stdout(chunk: ParsedToken, context: ExecutionContext) {
   const { interps, last_cmd, captures } = context
   const [out_or_err, second] = chunk
 
-  if (!(out_or_err === 'stdout' || out_or_err === 'stderr'))
-    throw new Error(`Expected only 'stdout' or 'stderr', got: ${out_or_err}`)
-  const capture = trimFinalNewline(last_cmd?.[out_or_err] || '')
+  const is_json = out_or_err === 'json';
+  if (!(out_or_err === 'stdout' || out_or_err === 'stderr' || is_json))
+    throw new Error(`Expected only 'stdout', 'stderr' or 'json', got: ${out_or_err}`)
+  const capture = is_json ?
+    parseJSON(last_cmd?.stdout)
+    : trimFinalNewline(last_cmd?.[out_or_err] || '')
 
   // @ts-ignore
   const tag: string = second.tag

@@ -12,3 +12,12 @@ export const trimFinalNewline = (input: string) => {
 
   return input
 }
+
+export const parseJSON = (input: string | undefined) => {
+  if (!input) throw new Error(`Attempting to parse JSON, got empty stdout.`)
+  try {
+    return JSON.parse(input)
+  } catch (e) {
+    throw new Error(`Failed to parse stdout as JSON, got: ${input}`)
+  }
+}

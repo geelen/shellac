@@ -184,6 +184,27 @@ describe('getting started', () => {
     expect(invocations).toBe(2)
   })
 
+  it('should emit json blocks', async () => {
+    let invocations = 0
+
+    const { stdout } = await shellac`
+      $ echo '{"a":1}'
+      json >> ${(obj) => {
+        invocations++
+        expect(obj).toEqual({a:1})
+      }}
+      
+      $ echo '{"b":2}'
+      json >> ${(obj) => {
+        invocations++
+        expect(obj).toEqual({b:2})
+      }}
+    `
+
+    expect(stdout).toBe('{"b":2}')
+    expect(invocations).toBe(2)
+  })
+
   it('should emit stderr blocks', async () => {
     let invocations = 0
 
@@ -252,7 +273,7 @@ describe('getting started', () => {
 
   it('should permit multiple return values', async () => {
     const dir = await tmp.dir({ unsafeCleanup: true })
-    const { default_branch, current_branch, current_sha } = await shellac.in(
+    const { default_branch, current_branch, current_sha, pkg } = await shellac.in(
       dir.path
     )`
       $ git init
@@ -272,11 +293,17 @@ describe('getting started', () => {
       
       $ git rev-parse --short HEAD
       stdout >> current_sha
+      
+      $ npm init -y
+      $ cat package.json
+      json >> pkg
     `
 
-    expect(default_branch).toEqual('master')
+    expect(default_branch).toMatch(/^(main|master)$/)
     expect(current_branch).toEqual('new-branch')
     expect(current_sha).toMatch(/^[a-f0-9]{7}$/)
+    expect(pkg.version).toEqual("1.0.0")
+    expect(pkg.keywords).toEqual([])
   })
 
   it('should only change dirs with in', async () => {

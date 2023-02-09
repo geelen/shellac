@@ -65,7 +65,7 @@ const await_statement = match('await_statement')`
 
 const stdout_statement = match('stdout_statement')`
   (?: ${ignored}? )
-  ${/std(out|err)/}
+  ${/std(out|err)|json/}
   (?: ${/\s+>>\s+/} )
   ( ${identifier} | ${variable_name} )  
   (?: ${ignored}?)
