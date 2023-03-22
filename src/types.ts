@@ -1,7 +1,7 @@
 import Shell from './child-subshell/shell'
 import Command from './child-subshell/command'
 import { ExitExpected } from './child-subshell/types'
-import {ChildProcessWithoutNullStreams} from "child_process";
+import { ChildProcessWithoutNullStreams } from 'child_process'
 
 export type ShellacValueInterpolation =
   | string
@@ -49,4 +49,6 @@ export type ExecutionContext = {
   captures: Captures
   shell: Shell
   exit_expected: ExitExpected
+  env: Record<string, string>
 }
+export type EnvVars = Record<string, any>

@@ -138,6 +138,59 @@ await shellac.in(dir.path)`
 `
 ```
 
+### Background tasks
+
+Shellac lets you run processes in the background, capturing the `pid` and providing a `promise` to wait on:
+
+```js
+// We must still await a shellac.bg call as starting the shell is an async task
+const { pid, promise } = await shellac.bg`
+  $$ for i in 1 2 3; do echo $i; sleep 1; done
+  $$ echo DONE
+`
+
+// This code runs immediately, while the previous shellac block is executing
+console.log(`Currently running process: ${pid}`)
+
+// Awaiting the promise waits for the process to complete as if you hadn't used .bg
+const { stdout } = await promise
+expect(stdout).toBe(`DONE`)
+```
+
+### Setting environment variables
+
+By default, shellac passes through the `PATH` environment variable and nothing else. You can override this by calling `.env()` with a map of keys to values:
+
+```js
+await shellac.env({ ENV_VAR: 'value' })`
+  $ echo $ENV_VAR
+  stdout >> ${(stdout) => expect(stdout).toBe('value')}
+`
+```
+
+This can be chained with `.in()` and `.bg`, although `.bg` must go last as it has a different return signature:
+
+```js
+await shellac.in(tmp_dir).env({
+  ENV_VAR: 'value' 
+}).bg`
+  $ sleep 1
+  $ echo $ENV_VAR
+`
+```
+
+To pass through values from `process.env`, we recommend combining shellac with [`just-pick`](https://anguscroll.com/just/just-pick):
+
+```js
+import pick from 'just-pick'
+
+const { stdout } = await shellac.env(
+  pick(process.env, ['EDITOR', 'TMPDIR'])
+)`
+  $ env
+`
+```
+
 ### Async
 
 Use the `await` declaration to invoke & wait for some JS inline with your script. It works great when Bash doesn't quite do what you need.

@@ -25,7 +25,7 @@ async function IfStatement(chunk: ParsedToken, context: ExecutionContext) {
 }
 
 async function Command(chunk: ParsedToken, context: ExecutionContext) {
-  const { interps, cwd, shell, exit_expected } = context
+  const { interps, cwd, shell, exit_expected, env } = context
   const [str] = chunk as string[]
   // @ts-ignore
   const split_cmd = str.split(/#__(?:FUNCTION|VALUE)_(\d+)__#/g)
@@ -45,7 +45,7 @@ async function Command(chunk: ParsedToken, context: ExecutionContext) {
     shell,
     cmd,
     pipe_logs: chunk.tag === 'logged_command',
-    exit_expected,
+    exit_expected
   })
   return command.run()
 }
