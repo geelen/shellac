@@ -3,7 +3,7 @@ import * as tmp from 'tmp-promise'
 import fs from 'fs-extra'
 import path from 'path'
 import Shell from '../src/child-subshell/shell'
-import {fileURLToPath} from "url";
+import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 describe('getting started', () => {
@@ -191,13 +191,13 @@ describe('getting started', () => {
       $ echo '{"a":1}'
       json >> ${(obj) => {
         invocations++
-        expect(obj).toEqual({a:1})
+        expect(obj).toEqual({ a: 1 })
       }}
       
       $ echo '{"b":2}'
       json >> ${(obj) => {
         invocations++
-        expect(obj).toEqual({b:2})
+        expect(obj).toEqual({ b: 2 })
       }}
     `
 
@@ -227,7 +227,9 @@ describe('getting started', () => {
       $ touch some.file
       $ mkdir -p some/dir
       $ echo "[FAB CI] NextJS — Branch ${Math.random()}" >> some/dir/echoed.file
-      $$ npx tree-node-cli
+      in ${ process.cwd() } {
+        $$ npx tree-node-cli ${ dir.path }
+      }
       
       stdout >> ${async (tree) =>
         expect(tree).toBe(
@@ -273,9 +275,8 @@ describe('getting started', () => {
 
   it('should permit multiple return values', async () => {
     const dir = await tmp.dir({ unsafeCleanup: true })
-    const { default_branch, current_branch, current_sha, pkg } = await shellac.in(
-      dir.path
-    )`
+    const { default_branch, current_branch, current_sha, pkg } =
+      await shellac.in(dir.path)`
       $ git init
       $ echo "SOME CONTENTS" >> some.file
       $ git add .
@@ -302,7 +303,7 @@ describe('getting started', () => {
     expect(default_branch).toMatch(/^(main|master)$/)
     expect(current_branch).toEqual('new-branch')
     expect(current_sha).toMatch(/^[a-f0-9]{7}$/)
-    expect(pkg).toEqual({a:1, b:2})
+    expect(pkg).toEqual({ a: 1, b: 2 })
   })
 
   it('should only change dirs with in', async () => {
