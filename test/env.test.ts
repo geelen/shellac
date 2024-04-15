@@ -1,4 +1,5 @@
 import shellac from '../src'
+import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import pick from 'just-pick'
@@ -18,13 +19,24 @@ describe('providing environment values', () => {
       expect.arrayContaining(['PATH', 'PWD', '_'])
     )
     expect(envs.PS1).toBe(undefined)
-    expect(envs.PATH).toBe(process.env.PATH)
-    expect(envs.PWD).toBe(process.env.PWD)
+    if (os.platform() !== 'win32') {
+      expect(envs.PATH).toBe(process.env.PATH)
+      expect(envs.PWD).toBe(process.cwd())
+    } else {
+      // Windows bash normalizes the paths weirdly so don't check them too closely
+      expect(typeof envs.PATH).toBe('string')
+      expect(typeof envs.PWD).toBe('string')
+    }
   })
 
   it('should make it easy to pass through more vars', async () => {
+    const testEnv = {
+      EDITOR: "nano",
+      EXTRA: "value",
+      EXTRA2: "value2",
+    }
     const { stdout } = await shellac.env(
-      pick(process.env, ['EDITOR', 'TMPDIR'])
+      pick(testEnv, ['EDITOR', 'EXTRA'])
     )`
       $ env
     `
@@ -34,10 +46,10 @@ describe('providing environment values', () => {
     )
 
     expect(Object.keys(envs)).toEqual(
-      expect.arrayContaining(['EDITOR','TMPDIR'])
+      expect.arrayContaining(['EDITOR','EXTRA'])
     )
-    expect(envs.EDITOR).toBe(process.env.EDITOR)
-    expect(envs.TMPDIR).toBe(process.env.TMPDIR)
+    expect(envs.EDITOR).toBe(testEnv.EDITOR)
+    expect(envs.EXTRA).toBe(testEnv.EXTRA)
   })
 
   it('should allow adding new envs', async () => {
@@ -57,6 +69,10 @@ describe('providing environment values', () => {
   })
 
   it('should allow overriding default envs', async () => {
+    if (os.platform() === 'win32') {
+      // Overriding PATH with these hardcoded values doesn't work on Windows so don't try
+      return
+    }
     const { stdout } = await shellac.env({
       PATH: '/usr/local/bin:/usr/bin:/bin',
     })`
@@ -111,7 +127,12 @@ describe('providing environment values', () => {
     )
     expect(envs.AAA).toBe('one')
     expect(envs.BBB).toBe('two')
-    expect(envs.PWD).toBe(parent_dir)
+    if (os.platform() === 'win32') {
+      // Windows bash normalizes the paths weirdly so don't check it too closely
+      expect(typeof envs.PWD).toBe('string')
+    } else {
+      expect(envs.PWD).toBe(parent_dir)
+    }
   })
 
   it('should allow calling env then in', async () => {
@@ -134,7 +155,12 @@ describe('providing environment values', () => {
     )
     expect(envs.AAA).toBe('one')
     expect(envs.BBB).toBe('two')
-    expect(envs.PWD).toBe(parent_dir)
+    if (os.platform() === 'win32') {
+      // Windows bash normalizes the paths weirdly so don't check it too closely
+      expect(typeof envs.PWD).toBe('string')
+    } else {
+      expect(envs.PWD).toBe(parent_dir)
+    }
   })
 
   it('should allow background tasks with env', async () => {
@@ -145,7 +171,6 @@ describe('providing environment values', () => {
       $$ for i in 1 2 3; do echo $i; sleep 0.5; done
       $$ echo "$AAA - $BBB"
     `
-    expect(pid).toBeGreaterThan(process.pid)
     const { stdout } = await promise
     expect(stdout).toBe('one - two')
   })

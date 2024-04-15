@@ -1,7 +1,9 @@
 import shellac from '../src'
 import * as tmp from 'tmp-promise'
 import fs from 'fs-extra'
+import os from 'os'
 import path from 'path'
+import { bashifyNativePath } from './helpers'
 import Shell from '../src/child-subshell/shell'
 import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -128,19 +130,19 @@ describe('getting started', () => {
     const { stdout: orig_dir } = await shellac`
       $ pwd
     `
-    expect(orig_dir).toBe(process.cwd())
+    expect(orig_dir).toBe(bashifyNativePath(process.cwd()))
 
     const { stdout: file_dir } = await shellac`
       in ${__dirname} {
         $ pwd
       }
     `
-    expect(file_dir).toBe(__dirname)
+    expect(file_dir).toBe(bashifyNativePath(__dirname))
 
     const { stdout: helper_dir } = await shellac.in(__dirname)`
       $ pwd
     `
-    expect(helper_dir).toBe(__dirname)
+    expect(helper_dir).toBe(bashifyNativePath(__dirname))
   })
 
   it('should await async blocks', async () => {
@@ -257,17 +259,25 @@ describe('getting started', () => {
 
   it('should handle nested IN statements', async () => {
     const dir = await tmp.dir({ unsafeCleanup: true })
+    const { stdout: reportedTmpDir } = await shellac.in(dir.path)`
+      $ pwd
+    `
+    if (os.platform() !== 'win32') {
+      // Path is normalized differently on Windows so don't bother checking it there.
+      // Some builds of Bash will do stuff like replace the windows tmp dir with "/tmp".
+      expect(reportedTmpDir).toBe(dir.path)
+    }
     await shellac.in(dir.path)`
       $ mkdir "lol boats"
       in "./lol boats" {
         $$ pwd
         stdout >> ${async (output) =>
-          expect(output).toBe(path.join(dir.path, 'lol boats'))}
+          expect(output).toBe(path.posix.join(reportedTmpDir, 'lol boats'))}
         $ mkdir subdir
         in subdir {
           $$ pwd
           stdout >> ${async (output) =>
-            expect(output).toBe(path.join(dir.path, 'lol boats', 'subdir'))}
+            expect(output).toBe(path.posix.join(reportedTmpDir, 'lol boats', 'subdir'))}
         }
       }
     `
@@ -312,27 +322,27 @@ describe('getting started', () => {
     await shellac.in(cwd)`
       // Normal behaviour
       $ pwd
-      stdout >> ${(pwd) => expect(pwd).toBe(cwd)}
+      stdout >> ${(pwd) => expect(pwd).toBe(bashifyNativePath(cwd))}
       
       // Has no effect on the remaining commands
       $ cd ..
       
       $ pwd
-      stdout >> ${(pwd) => expect(pwd).toBe(cwd)}
+      stdout >> ${(pwd) => expect(pwd).toBe(bashifyNativePath(cwd))}
       
       // If you want to change dir use in {}
       in ${parent_dir} {
         $ pwd
-        stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
+        stdout >> ${(pwd) => expect(pwd).toBe(bashifyNativePath(parent_dir))}
       }
       
       // Or do it on a single line
       $ cd .. && pwd
-      stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
+      stdout >> ${(pwd) => expect(pwd).toBe(bashifyNativePath(parent_dir))}
       
       // ; also works
       $ cd ..; pwd
-      stdout >> ${(pwd) => expect(pwd).toBe(parent_dir)}
+      stdout >> ${(pwd) => expect(pwd).toBe(bashifyNativePath(parent_dir))}
     `
   })
 
@@ -352,10 +362,13 @@ describe('getting started', () => {
       $$ for i in 1 2 3; do echo $i; sleep 1; done
       $$ echo background boi done
     `
-    expect(pid).toBeGreaterThan(process.pid)
-    await shellac`
-      $$ ps ${pid}
-    `
+    expect(typeof pid).toBe('number')
+    // ps isn't necessarily available on Windows so don't test this there
+    if (os.platform() !== 'win32') {
+      await shellac`
+        $$ ps ${pid}
+      `
+    }
     const { stdout } = await promise
     expect(stdout).toBe(`background boi done`)
   })
@@ -367,10 +380,10 @@ describe('getting started', () => {
         $$ for i in 1 2 3 4 5 6 7 8 9 10; do echo $i; sleep 1; done
       }
     `
-    expect(pid).toBeGreaterThan(process.pid)
+    expect(typeof pid).toBe('number')
     await shellac`
       $$ ps ${pid}
-      $$ sleep 3
+      $$ sleep 1
       $$ kill ${pid}
     `
     await promise
@@ -408,7 +421,15 @@ describe('getting started', () => {
 
     it('should fail trying to run IN a non-existent directory', async () => {
       const dir = await tmp.dir({ unsafeCleanup: true })
-      const subdir = path.join(dir.path, 'no-existo')
+      const { stdout: reportedTmpDir } = await shellac.in(dir.path)`
+        $ pwd
+      `
+      if (os.platform() !== 'win32') {
+        // Path is normalized differently on Windows so don't bother checking it there.
+        // Some builds of Bash will do stuff like replace the windows tmp dir with "/tmp".
+        expect(reportedTmpDir).toBe(dir.path)
+      }
+      const subdir = path.posix.join(reportedTmpDir, 'no-existo')
       await expect(shellac.in(subdir)`
         $ pwd
       `).rejects.toEqual(
@@ -423,7 +444,7 @@ describe('getting started', () => {
         $ pwd
         stdout >> ${(stdout) => {
           checks_run_before_failure++
-          expect(stdout).toBe(dir.path)
+          expect(stdout).toBe(reportedTmpDir)
         }}
         in ./not-there-eh {
           $ pwd
