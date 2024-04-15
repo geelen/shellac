@@ -1,4 +1,5 @@
 import child_process, { ChildProcessWithoutNullStreams } from 'child_process'
+import os from 'os'
 import { Logger } from './types'
 
 export default class Shell {
@@ -14,7 +15,8 @@ export default class Shell {
 
     this.process = child_process.spawn('bash', ['--noprofile', '--norc'], {
       env,
-      detached: true,
+      // use detached mode except on Windows where it's not compatible with all builds of bash
+      detached: os.platform() !== "win32",
     })
 
     this.process.stdout.setEncoding('utf8')
