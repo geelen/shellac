@@ -15,6 +15,7 @@ export default class Shell {
     this.process = child_process.spawn('bash', ['--noprofile', '--norc'], {
       env,
       detached: true,
+      shell: true
     })
 
     this.process.stdout.setEncoding('utf8')
